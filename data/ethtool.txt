@@ -1,0 +1,1494 @@
+NAME
+       ethtool - query or control network driver and hardware settings
+
+SYNOPSIS
+       ethtool devname
+       ethtool -h|--help
+       ethtool --version
+       ethtool [--debug N] args
+       ethtool [--disable-netlink] args
+       ethtool [--json] args
+       ethtool [-I | --include-statistics] args
+       ethtool [--phy N] args
+       ethtool --monitor [ command ] [ devname ]
+       ethtool -a|--show-pause devname
+       ethtool -A|--pause devname [autoneg on|off] [rx on|off] [tx on|off]
+       ethtool -c|--show-coalesce devname
+       ethtool -C|--coalesce devname [adaptive-rx on|off]
+              [adaptive-tx on|off] [rx-usecs N] [rx-frames N]
+              [rx-usecs-irq N] [rx-frames-irq N] [tx-usecs N]
+              [tx-frames N] [tx-usecs-irq N] [tx-frames-irq N]
+              [stats-block-usecs N] [pkt-rate-low N] [rx-usecs-low N]
+              [rx-frames-low N] [tx-usecs-low N] [tx-frames-low N]
+              [pkt-rate-high N] [rx-usecs-high N] [rx-frames-high N]
+              [tx-usecs-high N] [tx-frames-high N] [sample-interval N]
+              [cqe-mode-rx on|off] [cqe-mode-tx on|off]
+              [tx-aggr-max-bytes N] [tx-aggr-max-frames N]
+              [tx-aggr-time-usecs N]
+       ethtool -g|--show-ring devname
+       ethtool -G|--set-ring devname [rx N] [rx-mini N] [rx-jumbo N]
+              [tx N] [rx-buf-len N] [tcp-data-split auto|on|off]
+              [hds-thresh N] [cqe-size N] [tx-push N] [rx-push N]
+              [tx-push-buf-len N]
+       ethtool -i|--driver devname
+       ethtool -d|--register-dump devname [raw on|off] [hex on|off] [file name]
+       ethtool -e|--eeprom-dump devname [raw on|off] [offset N] [length N]
+       ethtool -E|--change-eeprom devname [magic N] [offset N] [length N] [value N]
+       ethtool -k|--show-features|--show-offload devname
+       ethtool -K|--features|--offload devname feature on|off ...
+       ethtool -p|--identify devname [N]
+       ethtool -P|--show-permaddr devname
+       ethtool -r|--negotiate devname
+       ethtool -S|--statistics devname [--all-groups|--groups [eth-phy]
+              [eth-mac] [eth-ctrl] [rmon] ]
+       ethtool --phy-statistics devname
+       ethtool -t|--test devname [offline|online|external_lb]
+       ethtool -s devname [speed N] [lanes N] [duplex half|full]
+              [port tp|aui|bnc|mii] [mdix auto|on|off] [autoneg on|off]
+              [advertise N[/M] | advertise mode on|off ...]  [phyad N]
+              [xcvr internal|external] [wol N[/M]
+              | wol p|u|m|b|a|g|s|f|d...]  [sopass xx:yy:zz:aa:bb:cc]
+              [master-slave preferred-master|preferred-slave|forced-
+              master|forced-slave] [msglvl N[/M] | msglvl type on|off
+              ...]
+       ethtool -n|-u|--show-nfc|--show-ntuple devname
+              [ rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6 |
+              rule N ]
+       ethtool -N|-U|--config-nfc|--config-ntuple devname
+              rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
+              m|v|t|s|d|f|n|r... |
+              flow-type
+              ether|ip4|tcp4|udp4|sctp4|ah4|esp4|ip6|tcp6|udp6|ah6|esp6|sctp6
+              [src xx:yy:zz:aa:bb:cc [m xx:yy:zz:aa:bb:cc]]
+              [dst xx:yy:zz:aa:bb:cc [m xx:yy:zz:aa:bb:cc]]
+              [proto N [m N]] [src-ip ip-address [m ip-address]]
+              [dst-ip ip-address [m ip-address]] [tos N [m N]]
+              [tclass N [m N]] [l4proto N [m N]] [src-port N [m N]]
+              [dst-port N [m N]] [spi N [m N]] [l4data N [m N]]
+              [vlan-etype N [m N]] [vlan N [m N]] [user-def N [m N]]
+              [dst-mac xx:yy:zz:aa:bb:cc [m xx:yy:zz:aa:bb:cc]]
+              [action N] [context N] [loc N] |
+              delete N
+       ethtool -w|--get-dump devname [data filename]
+       ethtool -W|--set-dump devname N
+       ethtool -T|--show-time-stamping devname [index N qualifier
+              precise|approx]
+       ethtool --get-hwtimestamp-cfg devname
+       ethtool --set-hwtimestamp-cfg devname [index N qualifier
+              precise|approx]
+       ethtool -x|--show-rxfh-indir|--show-rxfh devname
+       ethtool -X|--set-rxfh-indir|--rxfh devname
+              [hkey xx:yy:zz:aa:bb:cc:...]  [start N] [ equal N |
+              weight W0 W1 ... | default ] [hfunc FUNC] [xfrm symmetric-
+              xor|symmetric-or-xor|none] [context CTX | new] [delete]
+       ethtool -f|--flash devname file [N]
+       ethtool -l|--show-channels devname
+       ethtool -L|--set-channels devname [rx N] [tx N] [other N]
+              [combined N]
+       ethtool -m|--dump-module-eeprom|--module-info devname [raw on|off]
+              [hex on|off] [offset N] [length N] [page N] [bank N]
+              [i2c N]
+       ethtool --show-priv-flags devname
+       ethtool --set-priv-flags devname flag on|off ...
+       ethtool --show-eee devname
+       ethtool --set-eee devname [eee on|off] [tx-lpi on|off] [tx-
+              timer N] [advertise N]
+       ethtool --set-phy-tunable devname [ downshift on|off [count N] ] [
+              fast-link-down on|off [msecs N] ] [
+              energy-detect-power-down on|off [msecs N] ]
+       ethtool --get-phy-tunable devname [downshift] [fast-link-down]
+              [energy-detect-power-down]
+       ethtool --get-tunable devname [rx-copybreak] [tx-copybreak] [tx-
+              buf-size] [pfc-prevention-tout]
+       ethtool --set-tunable devname [rx-copybreak N] [tx-copybreak N]
+              [tx-buf-size N] [pfc-prevention-tout N]
+       ethtool --reset devname [flags N] [mgmt] [mgmt-shared] [irq] [irq-
+              shared] [dma] [dma-shared] [filter] [filter-shared]
+              [offload] [offload-shared] [mac] [mac-shared] [phy] [phy-
+              shared] [ram] [ram-shared] [ap] [ap-shared] [dedicated]
+              [all]
+       ethtool --show-fec devname
+       ethtool --set-fec devname encoding auto|off|rs|baser|llrs [...]
+       ethtool -Q|--per-queue devname [queue_mask %x] sub_command ...
+       ethtool --cable-test devname
+       ethtool --cable-test-tdr devname [first N] [last N] [step N]
+              [pair N]
+       ethtool --show-tunnels devname
+       ethtool --show-module devname
+       ethtool --set-module devname [power-mode-policy high|auto]
+       ethtool --get-plca-cfg devname
+       ethtool --set-plca-cfg devname [enable on|off] [node-id N]
+              [node-cnt N] [to-tmr N] [burst-cnt N] [burst-tmr N]
+       ethtool --get-plca-status devname
+       ethtool --show-mm devname
+       ethtool --set-mm devname [verify-enabled on|off] [verify-time N]
+              [tx-enabled on|off] [pmac-enabled on|off] [tx-min-frag-size
+              N]
+       ethtool --show-pse devname
+       ethtool --set-pse devname [podl-pse-admin-control enable|disable]
+              [c33-pse-admin-control enable|disable]
+              [c33-pse-avail-pw-limit N]
+       ethtool --flash-module-firmware devname file FILE [pass PASS]
+       ethtool --show-phys devname
+
+DESCRIPTION
+       ethtool  is  used  to  query and control network device driver and
+       hardware settings, particularly for wired Ethernet devices.
+
+       devname is the name of the network device on which ethtool  should
+       operate.
+
+OPTIONS
+       ethtool  with  a single argument specifying the device name prints
+       current settings of the specified device.
+
+       -h --help
+              Shows a short help message.
+
+       --version
+              Shows the ethtool version number.
+
+       --debug N
+              Turns on debugging messages. Argument is interpreted as a
+              mask:
+              0x01 - Parser information
+              0x02 - Summary of netlink messages
+              0x04 - Hex dump of sent netlink messages
+              0x08 - Hex dump of received netlink messages
+              0x10 - Structure of netlink messages
+
+       --disable-netlink
+              Do not use netlink and fall back to the ioctl interface if
+              possible.
+
+       --json
+              Output results in JavaScript Object Notation (JSON). Only a
+              subset of options support this. Those which do not will
+              continue to output plain text in the presence of this op‐
+              tion.
+
+       -I --include-statistics
+              Include command-related statistics in the output. This op‐
+              tion allows displaying relevant device statistics for se‐
+              lected get commands.
+
+       --phy N
+              Target a PHY within the interface. The PHY index can be re‐
+              trieved with --show-phys. PHY index 0 targets the phy de‐
+              vice directly attached to the ethernet MAC, if any.  The
+              following commands can accept a PHY index:
+              --cable-test
+              --cable-test-tdr
+              --get-plca-cfg
+              --set-plca-cfg
+              --get-plca-status
+              --show-pse
+              --set-pse
+
+       -a --show-pause
+              Queries the specified Ethernet device for pause parameter
+              information.
+
+              --src aggregate|emac|pmac
+                     If the MAC Merge layer is supported, request a particu‐
+                     lar source of device statistics (eMAC or pMAC, or their
+                     aggregate). Only valid if ethtool was invoked with the
+                     -I --include-statistics argument.
+
+       -A --pause
+              Changes the pause parameters of the specified Ethernet de‐
+              vice.
+
+              autoneg on|off
+                     Specifies whether pause autonegotiation should be en‐
+                     abled.
+
+              rx on|off
+                     Specifies whether RX pause should be enabled.
+
+              tx on|off
+                     Specifies whether TX pause should be enabled.
+
+       -c --show-coalesce
+              Queries the specified network device for coalescing infor‐
+              mation.
+
+       -C --coalesce
+              Changes the coalescing settings of the specified network
+              device.
+
+       -g --show-ring
+              Queries the specified network device for rx/tx ring parame‐
+              ter information.
+
+       -G --set-ring
+              Changes the rx/tx ring parameters of the specified network
+              device.
+
+              rx N
+                     Changes the number of ring entries for the Rx ring.
+
+              rx-mini N
+                     Changes the number of ring entries for the Rx Mini
+                     ring.
+
+              rx-jumbo N
+                     Changes the number of ring entries for the Rx Jumbo
+                     ring.
+
+              tx N
+                     Changes the number of ring entries for the Tx ring.
+
+              rx-buf-len N
+                     Changes the size of a buffer in the Rx ring.
+
+              tcp-data-split auto|on|off
+                     Specifies the state of TCP data split.
+
+              hds-thresh N
+                     Specifies the threshold value of tcp data split
+
+              cqe-size N
+                     Changes the size of completion queue event.
+
+              tx-push on|off
+                     Specifies whether TX push should be enabled.
+
+              rx-push on|off
+                     Specifies whether RX push should be enabled.
+
+              tx-push-buf-len N
+                     Specifies the maximum number of bytes of a transmitted
+                     packet a driver can push directly to the underlying de‐
+                     vice
+
+       -i --driver
+              Queries the specified network device for associated driver
+              information.
+
+       -d --register-dump
+              Retrieves and prints a register dump for the specified net‐
+              work device.  The register format for some devices is known
+              and decoded others are printed in hex.  When raw is en‐
+              abled, then ethtool dumps the raw register data to stdout.
+              If file is specified, then use contents of previous raw
+              register dump, rather than reading from the device.
+
+       -e --eeprom-dump
+              Retrieves and prints an EEPROM dump for the specified net‐
+              work device.  When raw is enabled, then it dumps the raw
+              EEPROM data to stdout. The length and offset parameters al‐
+              low dumping certain portions of the EEPROM.  Default is to
+              dump the entire EEPROM.
+
+              raw on|off
+
+              offset N
+
+              length N
+
+       -E --change-eeprom
+              If value is specified, changes EEPROM byte for the speci‐
+              fied network device.  offset and value specify which byte
+              and it's new value. If value is not specified, stdin is
+              read and written to the EEPROM. The length and offset para‐
+              meters allow writing to certain portions of the EEPROM.
+              Because of the persistent nature of writing to the EEPROM,
+              a device-specific magic key must be specified to prevent
+              the accidental writing to the EEPROM.
+
+       -k --show-features --show-offload
+              Queries the specified network device for the state of pro‐
+              tocol offload and other features.
+
+       -K --features --offload
+              Changes the offload parameters and other features of the
+              specified network device.  The following feature names are
+              built-in and others may be defined by the kernel.
+
+              rx on|off
+                     Specifies whether RX checksumming should be enabled.
+
+              tx on|off
+                     Specifies whether TX checksumming should be enabled.
+
+              sg on|off
+                     Specifies whether scatter-gather should be enabled.
+
+              tso on|off
+                     Specifies whether TCP segmentation offload should be
+                     enabled.
+
+              ufo on|off
+                     Specifies whether UDP fragmentation offload should be
+                     enabled
+
+              gso on|off
+                     Specifies whether generic segmentation offload should
+                     be enabled
+
+              gro on|off
+                     Specifies whether generic receive offload should be en‐
+                     abled
+
+              lro on|off
+                     Specifies whether large receive offload should be en‐
+                     abled
+
+              rxvlan on|off
+                     Specifies whether RX VLAN acceleration should be en‐
+                     abled
+
+              txvlan on|off
+                     Specifies whether TX VLAN acceleration should be en‐
+                     abled
+
+              ntuple on|off
+                     Specifies whether Rx ntuple filters and actions should
+                     be enabled
+
+              rxhash on|off
+                     Specifies whether receive hashing offload should be en‐
+                     abled
+
+       -p --identify
+              Initiates adapter-specific action intended to enable an op‐
+              erator to easily identify the adapter by sight.  Typically
+              this involves blinking one or more LEDs on the specific
+              network port.
+
+              [N]   Length of time to perform phys-id, in seconds.
+
+       -P --show-permaddr
+              Queries the specified network device for permanent hardware
+              address.
+
+       -r --negotiate
+              Restarts auto-negotiation on the specified Ethernet device,
+              if auto-negotiation is enabled.
+
+       -S --statistics
+              Queries the specified network device for standard (IEEE,
+              IETF, etc.), or NIC- and driver-specific statistics. NIC-
+              and driver-specific statistics are requested when no group
+              of statistics is specified.
+
+              NIC- and driver-specific statistics and standard statistics
+              are independent, devices may implement either, both or
+              none. There is little commonality between naming of NIC-
+              and driver-specific statistics across vendors.
+
+              --all-groups
+
+              --groups [eth-phy] [eth-mac] [eth-ctrl] [rmon]
+                     Request groups of standard device statistics.
+
+              --src aggregate|emac|pmac
+                     If the MAC Merge layer is supported, request a particu‐
+                     lar source of device statistics (eMAC or pMAC, or their
+                     aggregate).
+
+       --phy-statistics
+              Queries the specified network device for PHY specific sta‐
+              tistics.
+
+       -t --test
+              Executes adapter selftest on the specified network device.
+              Possible test modes are:
+
+              offline
+                     Perform full set of tests, possibly interrupting normal
+                     operation during the tests,
+
+              online Perform limited set of tests, not interrupting normal
+                     operation,
+
+              external_lb
+                     Perform full set of tests, as for offline, and addi‐
+                     tionally an external-loopback test.
+
+       -s --change
+              Allows changing some or all settings of the specified net‐
+              work device.  All following options only apply if -s was
+              specified.
+
+              speed N
+                     Set speed in Mb/s.  ethtool with just the device name
+                     as an argument will show you the supported device
+                     speeds.
+
+              lanes N
+                     Set number of lanes.
+
+              duplex half|full
+                     Sets full or half duplex mode.
+
+              port tp|aui|bnc|mii
+                     Selects device port.
+
+              master-slave preferred-master|preferred-slave|forced-mas‐
+              ter|forced-slave
+                     Configure MASTER/SLAVE role of the PHY. When the PHY is
+                     configured as MASTER, the PMA Transmit function shall
+                     source TX_TCLK from a local clock source. When config‐
+                     ured as SLAVE, the PMA Transmit function shall source
+                     TX_TCLK from the clock recovered from data stream pro‐
+                     vided by MASTER. Not all devices support this.
+                     preferred-master - Prefer MASTER role on autonegotiation
+                     preferred-slave - Prefer SLAVE role on autonegotiation
+                     forced-master - Force the PHY in MASTER role. Can be used without autonegotiation
+                     forced-slave - Force the PHY in SLAVE role. Can be used without autonegotiation
+
+              mdix auto|on|off
+                     Selects MDI-X mode for port. May be used to override
+                     the automatic detection feature of most adapters. An
+                     argument of auto means automatic detection of MDI sta‐
+                     tus, on forces MDI-X (crossover) mode, while off means
+                     MDI (straight through) mode.  The driver should guaran‐
+                     tee that this command takes effect immediately, and if
+                     necessary may reset the link to cause the change to
+                     take effect.
+
+              autoneg on|off
+                     Specifies whether autonegotiation should be enabled.
+                     Autonegotiation is enabled by default, but in some net‐
+                     work devices may have trouble with it, so you can dis‐
+                     able it if really necessary.
+
+              advertise N
+                     Sets the speed and duplex advertised by autonegotia‐
+                     tion.  The argument is a hexadecimal value using one or
+                     a combination of the following values:
+                     0x001 - 10baseT Half
+                     0x002 - 10baseT Full
+                     0x100000000000000000000000 - 10baseT1L Full
+                     0x8000000000000000000000000 - 10baseT1S Full
+                     0x10000000000000000000000000 - 10baseT1S Half
+                     0x20000000000000000000000000 - 10baseT1S_P2MP Half
+                     0x40000000000000000000000000 - 10baseT1BRR Full
+                     0x004 - 100baseT Half
+                     0x008 - 100baseT Full
+                     0x80000000000000000 - 100baseT1 Full
+                     0x40000000000000000000000 - 100baseFX Half
+                     0x80000000000000000000000 - 100baseFX Full
+                     0x010 - 1000baseT Half (not supported by IEEE standards)
+                     0x020 - 1000baseT Full
+                     0x20000 - 1000baseKX Full
+                     0x20000000000 - 1000baseX Full
+                     0x100000000000000000 - 1000baseT1 Full
+                     0x8000 - 2500baseX Full (not supported by IEEE standards)
+                     0x800000000000 - 2500baseT Full
+                     0x1000000000000 - 5000baseT Full
+                     0x1000 - 10000baseT Full
+                     0x40000 - 10000baseKX4 Full
+                     0x80000 - 10000baseKR Full
+                     0x100000 - 10000baseR_FEC
+                     0x40000000000 - 10000baseCR Full
+                     0x80000000000 - 10000baseSR Full
+                     0x100000000000 - 10000baseLR Full
+                     0x200000000000 - 10000baseLRM Full
+                     0x400000000000 - 10000baseER Full
+                     0x200000 - 20000baseMLD2 Full (not supported by IEEE standards)
+                     0x400000 - 20000baseKR2 Full (not supported by IEEE standards)
+                     0x80000000 - 25000baseCR Full
+                     0x100000000 - 25000baseKR Full
+                     0x200000000 - 25000baseSR Full
+                     0x800000 - 40000baseKR4 Full
+                     0x1000000 - 40000baseCR4 Full
+                     0x2000000 - 40000baseSR4 Full
+                     0x4000000 - 40000baseLR4 Full
+                     0x400000000 - 50000baseCR2 Full
+                     0x800000000 - 50000baseKR2 Full
+                     0x10000000000 - 50000baseSR2 Full
+                     0x10000000000000 - 50000baseKR Full
+                     0x20000000000000 - 50000baseSR Full
+                     0x40000000000000 - 50000baseCR Full
+                     0x80000000000000 - 50000baseLR_ER_FR Full
+                     0x100000000000000 - 50000baseDR Full
+                     0x8000000 - 56000baseKR4 Full
+                     0x10000000 - 56000baseCR4 Full
+                     0x20000000 - 56000baseSR4 Full
+                     0x40000000 - 56000baseLR4 Full
+                     0x1000000000 - 100000baseKR4 Full
+                     0x2000000000 - 100000baseSR4 Full
+                     0x4000000000 - 100000baseCR4 Full
+                     0x8000000000 - 100000baseLR4_ER4 Full
+                     0x200000000000000 - 100000baseKR2 Full
+                     0x400000000000000 - 100000baseSR2 Full
+                     0x800000000000000 - 100000baseCR2 Full
+                     0x1000000000000000 - 100000baseLR2_ER2_FR2 Full
+                     0x2000000000000000 - 100000baseDR2 Full
+                     0x8000000000000000000 - 100000baseKR Full
+                     0x10000000000000000000 - 100000baseSR Full
+                     0x20000000000000000000 - 100000baseLR_ER_FR Full
+                     0x40000000000000000000 - 100000baseCR Full
+                     0x80000000000000000000 - 100000baseDR Full
+                     0x4000000000000000 - 200000baseKR4 Full
+                     0x8000000000000000 - 200000baseSR4 Full
+                     0x10000000000000000 - 200000baseLR4_ER4_FR4 Full
+                     0x20000000000000000 - 200000baseDR4 Full
+                     0x40000000000000000 - 200000baseCR4 Full
+                     0x100000000000000000000 - 200000baseKR2 Full
+                     0x200000000000000000000 - 200000baseSR2 Full
+                     0x400000000000000000000 - 200000baseLR2_ER2_FR2 Full
+                     0x800000000000000000000 - 200000baseDR2 Full
+                     0x1000000000000000000000 - 200000baseCR2 Full
+                     0x80000000000000000000000000 - 200000baseCR Full
+                     0x100000000000000000000000000 - 200000baseKR Full
+                     0x200000000000000000000000000 - 200000baseDR Full
+                     0x400000000000000000000000000 - 200000baseDR_2 Full
+                     0x800000000000000000000000000 - 200000baseSR Full
+                     0x1000000000000000000000000000 - 200000baseVR Full
+                     0x200000000000000000 - 400000baseKR8 Full
+                     0x400000000000000000 - 400000baseSR8 Full
+                     0x800000000000000000 - 400000baseLR8_ER8_FR8 Full
+                     0x1000000000000000000 - 400000baseDR8 Full
+                     0x2000000000000000000 - 400000baseCR8 Full
+                     0x2000000000000000000000 - 400000baseKR4 Full
+                     0x4000000000000000000000 - 400000baseSR4 Full
+                     0x8000000000000000000000 - 400000baseLR4_ER4_FR4 Full
+                     0x10000000000000000000000 - 400000baseDR4 Full
+                     0x20000000000000000000000 - 400000baseCR4 Full
+                     0x2000000000000000000000000000  - 400000baseCR2 Full
+                     0x4000000000000000000000000000  - 400000baseKR2 Full
+                     0x8000000000000000000000000000 - 400000baseDR2 Full
+                     0x10000000000000000000000000000 - 400000baseDR2_2 Full
+                     0x20000000000000000000000000000 - 400000baseSR2 Full
+                     0x40000000000000000000000000000 - 400000baseVR2 Full
+                     0x200000000000000000000000 - 800000baseCR8 Full
+                     0x400000000000000000000000 - 800000baseKR8 Full
+                     0x800000000000000000000000 - 800000baseDR8 Full
+                     0x1000000000000000000000000 - 800000baseDR8_2 Full
+                     0x2000000000000000000000000 - 800000baseSR8 Full
+                     0x4000000000000000000000000 - 800000baseVR8 Full
+                     0x80000000000000000000000000000 - 800000baseCR4 Full
+                     0x100000000000000000000000000000 - 800000baseKR4 Full
+                     0x200000000000000000000000000000 - 800000baseDR4 Full
+                     0x400000000000000000000000000000 - 800000baseDR4_2 Full
+                     0x800000000000000000000000000000 - 800000baseSR4 Full
+                     0x1000000000000000000000000000000 - 800000baseVR4 Full
+
+              phyad N
+                     PHY address.
+
+              xcvr internal|external
+                     Selects transceiver type. Currently only internal and
+                     external can be specified, in the future further types
+                     might be added.
+
+              wol p|u|m|b|a|g|s|f|d...
+                     Sets Wake-on-LAN options.  Not all devices support
+                     this.  The argument to this option is a string of char‐
+                     acters specifying which options to enable.
+                     p   Wake on PHY activity
+                     u   Wake on unicast messages
+                     m   Wake on multicast messages
+                     b   Wake on broadcast messages
+                     a   Wake on ARP
+                     g   Wake on MagicPacket™
+                     s   Enable SecureOn™ password for MagicPacket™
+                     f   Wake on filter(s)
+                     d   Disable (wake on nothing).  This option
+                            clears all previous options.
+
+              sopass xx:yy:zz:aa:bb:cc
+                     Sets the SecureOn™ password. The argument to this op‐
+                     tion must be 6 bytes in Ethernet MAC hex format
+                     (xx:yy:zz:aa:bb:cc).
+
+              msglvl N, msglvl type on|off ...
+                     Sets the driver message type flags by name or number.
+                     type names the type of message to enable or disable; N
+                     specifies the new flags numerically. The defined type
+                     names and numbers are:
+                     drv         0x0001  General driver status
+                     probe       0x0002  Hardware probing
+                     link        0x0004  Link state
+                     timer       0x0008  Periodic status check
+                     ifdown      0x0010  Interface being brought down
+                     ifup        0x0020  Interface being brought up
+                     rx_err      0x0040  Receive error
+                     tx_err      0x0080  Transmit error
+                     tx_queued   0x0100  Transmit queueing
+                     intr        0x0200  Interrupt handling
+                     tx_done     0x0400  Transmit completion
+                     rx_status   0x0800  Receive completion
+                     pktdata     0x1000  Packet contents
+                     hw          0x2000  Hardware status
+                     wol         0x4000  Wake-on-LAN status
+
+                     The precise meanings of these type flags differ between
+                     drivers.
+
+       -n -u --show-nfc --show-ntuple
+              Retrieves receive network flow classification options or
+              rules.
+
+              rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
+                     Retrieves the hash options for the specified flow type.
+                     tcp4    TCP over IPv4
+                     udp4    UDP over IPv4
+                     ah4     IPSEC AH over IPv4
+                     esp4    IPSEC ESP over IPv4
+                     sctp4   SCTP over IPv4
+                     tcp6    TCP over IPv6
+                     udp6    UDP over IPv6
+                     ah6     IPSEC AH over IPv6
+                     esp6    IPSEC ESP over IPv6
+                     sctp6   SCTP over IPv6
+
+              rule N
+                     Retrieves the RX classification rule with the given ID.
+
+       -N -U --config-nfc --config-ntuple
+              Configures receive network flow classification options or
+              rules.
+
+              rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
+              m|v|t|s|d|f|n|r...
+                     Configures the hash options for the specified flow
+                     type.
+                     m   Hash on the Layer 2 destination address of the rx packet.
+                     v   Hash on the VLAN tag of the rx packet.
+                     t   Hash on the Layer 3 protocol field of the rx packet.
+                     s   Hash on the IP source address of the rx packet.
+                     d   Hash on the IP destination address of the rx packet.
+                     f   Hash on bytes 0 and 1 of the Layer 4 header of the rx packet.
+                     n   Hash on bytes 2 and 3 of the Layer 4 header of the rx packet.
+                     r   Discard all packets of this flow type. When this option is
+                            set, all other options are ignored.
+
+              flow-type
+              ether|ip4|tcp4|udp4|sctp4|ah4|esp4|ip6|tcp6|udp6|ah6|esp6|sctp6
+                     Inserts or updates a classification rule for the speci‐
+                     fied flow type.
+                     ether   Ethernet
+                     ip4     Raw IPv4
+                     tcp4    TCP over IPv4
+                     udp4    UDP over IPv4
+                     sctp4   SCTP over IPv4
+                     ah4     IPSEC AH over IPv4
+                     esp4    IPSEC ESP over IPv4
+                     ip6     Raw IPv6
+                     tcp6    TCP over IPv6
+                     udp6    UDP over IPv6
+                     sctp6   SCTP over IPv6
+                     ah6     IPSEC AH over IPv6
+                     esp6    IPSEC ESP over IPv6
+
+              For all fields that allow both a value and a mask to be speci‐
+              fied, the mask may be specified immediately after the value
+              using the m keyword, or separately using the field name key‐
+              word with -mask appended, e.g. src-mask.
+
+              src xx:yy:zz:aa:bb:cc [m xx:yy:zz:aa:bb:cc]
+                     Includes the source MAC address, specified as 6 bytes
+                     in hexadecimal separated by colons, along with an op‐
+                     tional mask.  Valid only for flow-type ether.
+
+              dst xx:yy:zz:aa:bb:cc [m xx:yy:zz:aa:bb:cc]
+                     Includes the destination MAC address, specified as 6
+                     bytes in hexadecimal separated by colons, along with an
+                     optional mask.  Valid only for flow-type ether.
+
+              proto N [m N]
+                     Includes the Ethernet protocol number (ethertype) and
+                     an optional mask.  Valid only for flow-type ether.
+
+              src-ip ip-address [m ip-address]
+                     Specify the source IP address of the incoming packet to
+                     match along with an optional mask.  Valid for all IP
+                     based flow-types.
+
+              dst-ip ip-address [m ip-address]
+                     Specify the destination IP address of the incoming
+                     packet to match along with an optional mask.  Valid for
+                     all IP based flow-types.
+
+              tos N [m N]
+                     Specify the value of the Type of Service field in the
+                     incoming packet to match along with an optional mask.
+                     Applies to all IPv4 based flow-types.
+
+              tclass N [m N]
+                     Specify the value of the Traffic Class field in the in‐
+                     coming packet to match along with an optional mask.
+                     Applies to all IPv6 based flow-types.
+
+              l4proto N [m N]
+                     Includes the layer 4 protocol number and optional mask.
+                     Valid only for flow-types ip4 and ip6.
+
+              src-port N [m N]
+                     Specify the value of the source port field (applicable
+                     to TCP/UDP packets) in the incoming packet to match
+                     along with an optional mask.  Valid for flow-types ip4,
+                     tcp4, udp4, and sctp4 and their IPv6 equivalents.
+
+              dst-port N [m N]
+                     Specify the value of the destination port field (ap‐
+                     plicable to TCP/UDP packets)in the incoming packet to
+                     match along with an optional mask.  Valid for flow-
+                     types ip4, tcp4, udp4, and sctp4 and their IPv6 equiva‐
+                     lents.
+
+              spi N [m N]
+                     Specify the value of the security parameter index field
+                     (applicable to AH/ESP packets)in the incoming packet to
+                     match along with an optional mask.  Valid for flow-
+                     types ip4, ah4, and esp4 and their IPv6 equivalents.
+
+              l4data N [m N]
+                     Specify the value of the first 4 Bytes of Layer 4 in
+                     the incoming packet to match along with an optional
+                     mask.  Valid for ip4 and ip6 flow-types.
+
+              vlan-etype N [m N]
+                     Includes the VLAN tag Ethertype and an optional mask.
+
+              vlan N [m N]
+                     Includes the VLAN tag and an optional mask.
+
+              user-def N [m N]
+                     Includes 64-bits of user-specific data and an optional
+                     mask.
+
+              dst-mac xx:yy:zz:aa:bb:cc [m xx:yy:zz:aa:bb:cc]
+                     Includes the destination MAC address, specified as 6
+                     bytes in hexadecimal separated by colons, along with an
+                     optional mask.  Valid for all IP based flow-types.
+
+              action N
+                     Specifies the Rx queue to send packets to, or some oth‐
+                     er action.
+                     -1            Drop the matched flow
+                     -2            Use the matched flow as a Wake-on-LAN filter
+                     0 or higher   Rx queue to route the flow
+
+              context N
+                     Specifies the RSS context to spread packets over multi‐
+                     ple queues; either 0 for the default RSS context, or a
+                     value returned by ethtool -X ... context new.  If com‐
+                     bined with action or queue, the Rx queue specified will
+                     be added to the value read from the RSS indirection ta‐
+                     ble to produce the actual Rx queue to deliver to.
+
+              vf N
+                     Specifies the Virtual Function the filter applies to.
+                     Not compatible with action.
+
+              queue N
+                     Specifies the Rx queue to send packets to. Not compati‐
+                     ble with action.
+
+              loc N
+                     Specify the location/ID to insert the rule. This will
+                     overwrite any rule present in that location and will
+                     not go through any of the rule ordering process.
+
+              delete N
+                     Deletes the RX classification rule with the given ID.
+
+       -w --get-dump
+              Retrieves and prints firmware dump for the specified net‐
+              work device.  By default, it prints out the dump flag, ver‐
+              sion and length of the dump data.  When data is indicated,
+              then ethtool fetches the dump data and directs it to a
+              file.
+
+       -W --set-dump
+              Sets the dump flag for the device.
+
+       -T --show-time-stamping
+              Show the device's time stamping capabilities and associated
+              PTP hardware clock. Show the capabilities of the currently
+              selected time stamping if no index and qualifier is provid‐
+              ed.
+
+              index N
+                     Index of the ptp hardware clock
+
+              qualifier precise|approx
+                     Qualifier of the ptp hardware clock. Mainly "precise"
+                     the default one is for IEEE 1588 quality and "approx"
+                     is for NICs DMA point.
+
+       --get-hwtimestamp-cfg
+              Show the selected time stamping PTP hardware clock configu‐
+              ration.
+
+       --set-hwtimestamp-cfg
+              Select the device's time stamping PTP hardware clock.
+
+              index N
+                     Index of the ptp hardware clock
+
+              qualifier precise|approx
+                     Qualifier of the ptp hardware clock. Mainly "precise"
+                     the default one is for IEEE 1588 quality and "approx"
+                     is for NICs DMA point.
+
+       -x --show-rxfh-indir --show-rxfh
+              Retrieves the receive flow hash indirection table and/or
+              RSS hash key.
+
+       -X --set-rxfh-indir --rxfh
+              Configures the receive flow hash indirection table and/or
+              RSS hash key.
+
+              hkey
+                     Sets RSS hash key of the specified network device. RSS
+                     hash key should be of device supported length.  Hash
+                     key format must be in xx:yy:zz:aa:bb:cc format meaning
+                     both the nibbles of a byte should be mentioned even if
+                     a nibble is zero.
+
+              hfunc
+                     Sets RSS hash function of the specified network device.
+                     List of RSS hash functions which kernel supports is
+                     shown as a part of the --show-rxfh command output.
+
+              xfrm
+                     Sets the RSS input transformation. Currently, only the
+                     symmetric-xor and symmetric-or-xor transformations are
+                     supported where the NIC XORs/ORs the L3 and/or L4
+                     source and destination fields (as selected by --config-
+                     nfc rx-flow-hash ) before passing them to the hash al‐
+                     gorithm. The RSS hash function will then yield the same
+                     hash for the other flow direction where the source and
+                     destination fields are swapped (i.e. Symmetric RSS).
+                     Note that this operation reduces the entropy of the in‐
+                     put set and the hash algorithm could potentially be ex‐
+                     ploited. Switch off by xfrm none.
+
+              start N
+                     For the equal and weight options, sets the starting re‐
+                     ceive queue for spreading flows to N.
+
+              equal N
+                     Sets the receive flow hash indirection table to spread
+                     flows evenly between the first N receive queues.
+
+              weight W0 W1 ...
+                     Sets the receive flow hash indirection table to spread
+                     flows between receive queues according to the given
+                     weights.  The sum of the weights must be non-zero and
+                     must not exceed the size of the indirection table.
+
+              default
+                     Sets the receive flow hash indirection table to its de‐
+                     fault value.
+
+              context CTX | new
+                     Specifies an RSS context to act on; either new to allo‐
+                     cate a new RSS context, or CTX, a value returned by a
+                     previous ... context new.
+
+              delete
+                     Delete the specified RSS context.  May only be used in
+                     conjunction with context and a non-zero CTX value.
+
+       -f --flash
+              Write a firmware image to flash or other non-volatile memo‐
+              ry on the device.
+
+              file
+                     Specifies the filename of the firmware image.  The
+                     firmware must first be installed in one of the directo‐
+                     ries where the kernel firmware loader or firmware agent
+                     will look, such as /lib/firmware.
+
+              N
+                     If the device stores multiple firmware images in sepa‐
+                     rate regions of non-volatile memory, this parameter may
+                     be used to specify which region is to be written.  The
+                     default is 0, requesting that all regions are written.
+                     All other values are driver-dependent.
+
+       -l --show-channels
+              Queries the specified network device for the numbers of
+              channels it has.  A channel is an IRQ and the set of queues
+              that can trigger that IRQ.
+
+       -L --set-channels
+              Changes the numbers of channels of the specified network
+              device.
+
+              rx N
+                     Changes the number of channels with only receive
+                     queues.
+
+              tx N
+                     Changes the number of channels with only transmit
+                     queues.
+
+              other N
+                     Changes the number of channels used only for other pur‐
+                     poses e.g. link interrupts or SR-IOV co-ordination.
+
+              combined N
+                     Changes the number of multi-purpose channels.
+
+       -m --dump-module-eeprom --module-info
+              Retrieves and if possible decodes the EEPROM from plugin
+              modules, e.g SFP+, QSFP.  If the driver and module support
+              it, the optical diagnostic information is also read and de‐
+              coded.  When either one of page, bank or i2c parameters is
+              specified, dumps only of a single page or its portion is
+              allowed. In such a case offset and length parameters are
+              treated relatively to EEPROM page boundaries.
+
+       --show-priv-flags
+              Queries the specified network device for its private flags.
+              The names and meanings of private flags (if any) are de‐
+              fined by each network device driver.
+
+       --set-priv-flags
+              Sets the device's private flags as specified.
+
+              flag on|off - Sets the state of the named private flag.
+
+       --show-eee
+              Queries the specified network device for its support of En‐
+              ergy-Efficient Ethernet (according to the IEEE 802.3az
+              specifications)
+
+       --set-eee
+              Sets the device EEE behaviour.
+
+              eee on|off
+                     Enables/disables the device support of EEE.
+
+              tx-lpi on|off
+                     Determines whether the device should assert its Tx LPI.
+
+              advertise N
+                     Sets the speeds for which the device should advertise
+                     EEE capabilities.  Values are as for --change advertise
+
+              tx-timer N
+                     Sets the amount of time the device should stay in idle
+                     mode prior to asserting its Tx LPI (in microseconds).
+                     This has meaning only when Tx LPI is enabled.
+
+       --set-phy-tunable
+              Sets the PHY tunable parameters.
+
+              downshift on|off
+                     Specifies whether downshift should be enabled.
+                     
+                     count N
+                            Sets the PHY downshift re-tries count.
+
+              fast-link-down on|off
+                     Specifies whether Fast Link Down should be enabled and
+                     time until link down (if supported).
+                     
+                     msecs N
+                            Sets the period after which the link is reported as down. Note that the PHY may choose
+                            the closest supported value. Only on reading back the tunable do you get the actual value.
+
+              energy-detect-power-down on|off
+                     Specifies whether Energy Detect Power Down (EDPD)
+                     should be enabled (if supported).  This will put the RX
+                     and TX circuit blocks into a low power mode, and the
+                     PHY will wake up periodically to send link pulses to
+                     avoid any lock-up situation with a peer PHY that may
+                     also have EDPD enabled. By default, this setting will
+                     also enable the periodic transmission of TX pulses.
+                     
+                     msecs N
+                            Some PHYs support configuration of the wake-up interval to send TX pulses.
+                            This setting allows the control of this interval, and 0 disables TX pulses
+                            if the PHY supports this. Disabling TX pulses can create a lock-up situation
+                            where neither of the PHYs wakes the other one. If unspecified the default
+                            value (in milliseconds) will be used by the PHY.
+
+       --get-phy-tunable
+              Gets the PHY tunable parameters.
+
+              downshift
+                     For operation in cabling environments that are incom‐
+                     patible with 1000BASE-T, PHY device provides an auto‐
+                     matic link speed downshift operation.  Link speed down‐
+                     shift after N failed 1000BASE-T auto-negotiation at‐
+                     tempts.  Downshift is useful where cable does not have
+                     the 4 pairs instance. Gets the PHY downshift count/status.
+
+              fast-link-down
+                     Depending on the mode it may take 0.5s - 1s until a
+                     broken link is reported as down.  In certain use cases
+                     a link-down event needs to be reported as soon as pos‐
+                     sible.  Some PHYs support a Fast Link Down Feature and
+                     may allow configuration of the delay before a broken
+                     link is reported as being down. Gets the PHY Fast Link 
+                     Down status / period.
+
+              energy-detect-power-down
+                     Gets the current configured setting for Energy Detect
+                     Power Down (if supported).
+
+       --get-tunable
+              Get the tunable parameters.
+
+              rx-copybreak
+                     Get the current rx copybreak value in bytes.
+
+              tx-copybreak
+                     Get the current tx copybreak value in bytes.
+
+              tx-buf-size
+                     Get the current tx copybreak buffer size in bytes.
+
+              pfc-prevention-tout
+                     Get the current pfc prevention timeout value in msecs.
+
+       --set-tunable
+              Set driver's tunable parameters.
+
+              rx-copybreak N
+                     Set the rx copybreak value in bytes.
+
+              tx-copybreak N
+                     Set the tx copybreak value in bytes.
+
+              tx-buf-size N
+                     Set the tx copybreak buffer size in bytes.
+
+              pfc-prevention-tout N
+                     Set pfc prevention timeout in msecs. Value of 0 means
+                     disable and 65535 means auto.
+
+       --reset
+              Reset hardware components specified by flags and components
+              listed below
+
+              flags N
+                     Resets the components based on direct flags mask
+
+              mgmt
+                     Management processor
+
+              irq
+                     Interrupt requester
+
+              dma
+                     DMA engine
+
+              filter
+                     Filtering/flow direction
+
+              offload
+                     Protocol offload
+
+              mac
+                     Media access controller
+
+              phy
+                     Transceiver/PHY
+
+              ram
+                     RAM shared between multiple components ap Application
+                     Processor
+
+              dedicated
+                     All components dedicated to this interface
+
+              all
+                     All components used by this interface, even if shared
+
+       --show-fec
+              Queries the specified network device for its support of
+              Forward Error Correction.
+
+       --set-fec
+              Configures Forward Error Correction for the specified net‐
+              work device.
+
+              Forward Error Correction modes selected by a user are ex‐
+              pected to be persisted after any hotplug events. If a mod‐
+              ule is swapped that does not support the current FEC mode,
+              the driver or firmware must take the link down administra‐
+              tively and report the problem in the system logs for users
+              to correct.
+
+              encoding auto|off|rs|baser|llrs [...]
+                     Sets the FEC encoding for the device.  Combinations of
+                     options are specified as e.g.  encoding auto rs ; the
+                     semantics of such combinations vary between drivers.
+                     auto    Use the driver's default encoding
+                     off     Turn off FEC
+                     RS      Force RS-FEC encoding
+                     BaseR   Force BaseR encoding
+                     LLRS    Force LLRS-FEC encoding
+
+       -Q|--per-queue
+              Applies provided sub command to specific queues.
+
+              queue_mask %x
+                     Sets the specific queues which the sub command is ap‐
+                     plied to.  If queue_mask is not set, the sub command
+                     will be applied to all queues.
+
+              sub_command
+                     Sub command to apply. The supported sub commands in‐
+                     clude --show-coalesce and --coalesce.
+
+       --cable-test
+              Perform a cable test and report the results. What results
+              are returned depends on the capabilities of the network in‐
+              terface. Typically open pairs and shorted pairs can be re‐
+              ported, along with pairs being O.K. When a fault is detect‐
+              ed the approximate distance to the fault may be reported.
+
+       --cable-test-tdr
+              Perform a cable test and report the raw Time Domain Reflec‐
+              tometer data.  A pulse is sent down a cable pair and the
+              amplitude of the reflection, for a given distance, is re‐
+              ported. A break in the cable returns a big reflection. Mi‐
+              nor damage to the cable returns a small reflection. If the
+              cable is shorted, the amplitude of the reflection can be
+              negative. By default, data is returned for lengths between
+              0 and 150m at 1m steps, for all pairs. However parameters
+              can be passed to restrict the collection of data. It should
+              be noted, that the interface will round the distances to
+              whatever granularity is actually implemented. This is often
+              0.8 of a meter. The results should include the actual
+              rounded first and last distance and step size.
+
+              first  N
+                     Distance along the cable, in meters, where the first
+                     measurement should be made.
+
+              last  N
+                     Distance along the cable, in meters, where the last
+                     measurement should be made.
+
+              step  N
+                     Distance, in meters, between each measurement.
+
+              pair  N
+                     Which pair should be measured. Typically a cable has 4
+                     pairs. 0 = Pair A, 1 = Pair B, ...
+
+       --monitor
+              Listens to netlink notification and displays them.
+
+              command
+                     If argument matching a command is used, ethtool only
+                     shows notifications of this type. Without such argument
+                     or with --all, all notification types are shown.
+
+              devname
+                     If a device name is used as argument, only notification
+                     for this device are shown. Default is to show notifica‐
+                     tions for all devices.
+
+       --show-tunnels
+              Show tunnel-related device capabilities and state.  List
+              UDP ports kernel has programmed the device to parse as
+              VxLAN, or GENEVE tunnels.
+
+       --show-module
+              Show the transceiver module's parameters.
+
+       --set-module
+              Set the transceiver module's parameters.
+
+              power-mode-policy high|auto
+                     Set the power mode policy for the module. When set to
+                     high, the module always operates at high power mode.
+                     When set to auto, the module is transitioned by the
+                     host to high power mode when the first port using it is
+                     put administratively up and to low power mode when the
+                     last port using it is put administratively down. The
+                     power mode policy can be set before a module is
+                     plugged-in.
+
+       --get-plca-cfg
+              Show the current PLCA parameters for the given interface.
+
+       --set-plca-cfg
+              Change the PLCA settings for the given interface.
+
+              enable on|off
+                     Enables or disables the PLCA function. When the PLCA RS
+                     is disabled (default), the PHY operates in plain CS‐
+                     MA/CD mode. To enable PLCA, the PHY must be assigned a
+                     unique plca-id other than 255. This one can be config‐
+                     ured concurrently with the enable parameter. The enable
+                     parameter maps to IEEE 802.3cg-2019 clause 30.16.1.1.1
+                     (aPLCAAdminState) and clause 30.16.1.2.1 (acPLCAAdmin‐
+                     Control).
+
+              node-id N
+                     The unique node identifier in the range [0 .. 255].
+                     Node ID 0 is reserved for the coordinator node, the one
+                     generating the BEACON signal. There must be exactly one
+                     coordinator on a PLCA network. Setting the node ID to
+                     255 (default) disables the node. This parameter maps to
+                     IEEE 802.3cg-2019 clause 30.16.1.1.4 (aPLCALocalN‐
+                     odeID).
+
+              node-cnt N
+                     The node-cnt [1 .. 255] should be set after the maximum
+                     number of nodes that can be plugged to the multi-drop
+                     network. This parameter regulates the minimum length of
+                     the PLCA cycle. Therefore, it is only meaningful for
+                     the coordinator node (nod-id = 0). Setting this parame‐
+                     ter on a follower node has no effect. The node-cnt pa‐
+                     rameter maps to IEEE 802.3cg-2019 clause 30.16.1.1.3
+                     (aPLCANodeCount).
+
+              to-tmr N
+                     The TO timer parameter sets the value of the transmit
+                     opportunity timer in bit-times, and shall be set equal
+                     across all the nodes sharing the same medium for PLCA
+                     to work. The default value of 32 is enough to cover a
+                     link of roughly 50 mt. This parameter maps to  IEEE
+                     802.3cg-2019 clause 30.16.1.1.5 (aPLCATransmitOpportu‐
+                     nityTimer).
+
+              burst-cnt N
+                     The burst-cnt parameter [0 .. 255] indicates the extra
+                     number of packets that the node is allowed to send dur‐
+                     ing a single transmit opportunity.  By default, this
+                     attribute is 0, meaning that the node can send a sigle
+                     frame per TO. When greater than 0, the PLCA RS keeps
+                     the TO after any transmission, waiting for the MAC to
+                     send a new frame for up to burst-tmr BTs. This can only
+                     happen a number of times per PLCA cycle up to the value
+                     of this parameter.  After that, the burst is over and
+                     the normal counting of TOs resumes.  This parameter
+                     maps to IEEE 802.3cg-2019 clause 30.16.1.1.6 (aPLCA‐
+                     MaxBurstCount).
+
+              burst-tmr N
+                     The burst-tmr parameter [0 .. 255] sets how many bit-
+                     times the PLCA RS waits for the MAC to initiate a new
+                     transmission when burst-cnt is greater than 0. If the
+                     MAC fails to send a new frame within this time, the
+                     burst ends and the counting of TOs resumes. Otherwise,
+                     the new frame is sent as part of the current burst.
+                     This parameter maps to IEEE 802.3cg-2019 clause
+                     30.16.1.1.7 (aPLCABurstTimer). The value of burst-tmr
+                     should be set greater than the Inter-Frame-Gap (IFG)
+                     time of the MAC (plus some margin) for PLCA burst mode
+                     to work as intended.
+
+       --get-plca-status
+              Show the current PLCA status for the given interface. If
+              on, the PHY is successfully receiving or generating the
+              BEACON signal. If off, the PLCA function is temporarily
+              disabled and the PHY is operating in plain CSMA/CD mode.
+
+       --show-mm
+              Show the MAC Merge layer state. The ethtool argument -I
+              --include-statistics can be used with this command, and MAC
+              Merge layer statistics counters will also be retrieved.
+
+              pmac-enabled
+                     Shows whether the pMAC is enabled and capable of re‐
+                     ceiving traffic and SMD-V frames (and responding to
+                     them with SMD-R replies).
+
+              tx-enabled
+                     Shows whether transmission on the pMAC is administra‐
+                     tively enabled.
+
+              tx-active
+                     Shows whether transmission on the pMAC is active (veri‐
+                     fication is either successful, or was disabled).
+
+              tx-min-frag-size
+                     Shows the minimum size (in octets) of transmitted non-
+                     final fragments which can be received by the link part‐
+                     ner. Corresponds to the standard addFragSize variable
+                     using the formula: tx-min-frag-size = 64 * (1 + addFragSize) - 4
+
+              rx-min-frag-size
+                     Shows the minimum size (in octets) of non-final frag‐
+                     ments which the local device supports receiving.
+
+              verify-enabled
+                     Shows whether the verification state machine is en‐
+                     abled. This process, if successful, ensures that pre‐
+                     emptible frames transmitted by the local device will
+                     not be dropped as error frames by the link partner.
+
+              verify-time
+                     Shows the interval in ms between verification attempts,
+                     represented as an integer between 1 and 128 ms. The
+                     standard defines a fixed number of verification at‐
+                     tempts (verifyLimit) before failing the verification
+                     process.
+
+              max-verify-time
+                     Shows the maximum value for verify-time accepted by the
+                     local device, which may be less than 128 ms.
+
+              verify-status
+                     Shows the current state of the verification state ma‐
+                     chine of the local device.  Values can be INITIAL, VER‐
+                     IFYING, SUCCEEDED, FAILED or DISABLED.
+
+       --set-mm
+              Set the MAC Merge layer parameters.
+
+              pmac-enabled  on|off
+                     Enable reception for the pMAC.
+
+              tx-enabled  on|off
+                     Administatively enable transmission for the pMAC.
+
+              tx-min-frag-size  N
+                     Set the minimum size (in octets) of transmitted non-fi‐
+                     nal fragments which can be received by the link part‐
+                     ner.
+
+              verify-enabled  on|off
+                     Enable or disable the verification state machine.
+
+              verify-time  N
+                     Set the interval in ms between verification attempts.
+
+       --show-pse
+              Show the current Power Sourcing Equipment (PSE) status for
+              the given interface.
+
+              podl-pse-admin-state
+                     This attribute indicates the operational status of PoDL
+                     PSE functions, which can be modified using the podl-
+                     pse-admin-control parameter. It corresponds to IEEE
+                     802.3-2018 30.15.1.1.2 (aPoDLPSEAdminState), with po‐
+                     tential values being enabled, disabled
+
+              podl-pse-power-detection-status
+                     This attribute indicates the power detection status of
+                     the PoDL PSE. The status depend on internal PSE state
+                     machine and automatic PD classification support. It
+                     corresponds to IEEE 802.3-2018 30.15.1.1.3 (aPoDLPSE‐
+                     PowerDetectionStatus) with potential values being dis‐
+                     abled, searching, delivering power, sleep, idle, error
+
+              c33-pse-admin-state
+                     This attribute indicates the operational status of c33
+                     PSE functions, which can be modified using the c33-pse-
+                     admin-control parameter. It corresponds to IEEE
+                     802.3-2022 30.9.1.1.2 (aPSEAdminState), with potential
+                     values being enabled, disabled
+
+              c33-pse-power-detection-status
+                     This attribute indicates the power detection status of
+                     the c33 PSE. The status depend on internal PSE state
+                     machine and automatic PD classification support. It
+                     corresponds to IEEE 802.3-2022 30.9.1.1.5 (aPSEPowerDe‐
+                     tectionStatus) with potential values being disabled,
+                     searching, delivering power, test, fault, other fault
+
+              c33-pse-extended-state
+                     This attribute indicates the Extended state of the c33
+                     PSE. The extended state correlated with the c33 PSE Ex‐
+                     tended Substate allows to have more detail on the c33
+                     PSE current error state.  It corresponds to IEEE
+                     802.3-2022 33.2.4.4 Variables.
+
+              c33-pse-extended-substate
+                     This attribute indicates the Extended substate of the
+                     c33 PSE. Correlated with the c33 PSE Extended state
+                     value, it allows to have more detail on the c33 PSE
+                     current error state.
+
+              c33-pse-power-class
+                     This attribute identifies the power class of the c33
+                     PSE. It depends on the class negotiated between the PSE
+                     and the PD. It corresponds to IEEE 802.3-2022
+                     30.9.1.1.8 (aPSEPowerClassification).
+
+              c33-pse-actual-power
+                     This attribute identifies the actual power drawn by the
+                     c33 PSE. It corresponds to ``IEEE 802.3-2022``
+                     30.9.1.1.23 (aPSEActualPower). Actual power is reported
+                     in mW.
+
+              c33-pse-available-power-limit
+                     This attribute identifies the configured c33 PSE power
+                     limit in mW.
+
+              c33-pse-power-limit-ranges
+                     This attribute specifies the allowed power limit ranges
+                     in mW for configuring the c33-pse-avail-pw-limit para‐
+                     meter. It defines the valid power levels that can be
+                     assigned to the c33 PSE in compliance with the c33
+                     standard.
+
+       --set-pse
+              Set Power Sourcing Equipment (PSE) parameters.
+
+              podl-pse-admin-control  enable|disable
+                     This parameter manages PoDL PSE Admin operations in ac‐
+                     cordance with the IEEE 802.3-2018 30.15.1.2.1
+                     (acPoDLPSEAdminControl) specification.
+
+              c33-pse-admin-control  enable|disable
+                     This parameter manages c33 PSE Admin operations in ac‐
+                     cordance with the IEEE 802.3-2022 30.9.1.2.1 (acPSEAd‐
+                     minControl) specification.
+
+              c33-pse-avail-pw-limit  N
+                     This parameter manages c33 PSE Available Power Limit in
+                     mW, in accordance with the IEEE 802.3-2022 33.2.4.4
+                     Variables (pse_available_power) specification.
+
+       --flash-module-firmware
+              Flash the transceiver module's firmware. The firmware up‐
+              date process is composed from three logical steps. Down‐
+              loading a firmware image to the transceiver module, running
+              the image and committing the image so that it is run upon
+              reset. When flash command is given, the firmware update
+              process is performed in its entirety in that order.
+
+              file FILE
+                     Specifies the filename of the transceiver module
+                     firmware image. The firmware must first be installed in
+                     one of the directories where the kernel firmware loader
+                     or firmware agent will look, such as /lib/firmware. The
+                     firmware image is downloaded to the transceiver module,
+                     validated, run and committed.
+
+              pass PASS
+                     Optional transceiver module password that might be re‐
+                     quired as part of the transceiver module firmware up‐
+                     date process.
+
+       --show-phys
+              Show the PHY devices attached to an interface, and the way
+              they link together.
+
+              phy_index
+                     The PHY's index, that identifies it within the network
+                     interface. If the interface has multiple PHYs, they
+                     will each have a unique index on that interface. This
+                     index can then be used for commands that targets PHYs.
+
+              drvname
+                     The name of the driver bound to this PHY device.
+
+              name   The PHY's device name, matching the name found in sys‐
+                     fs.
+
+              downstream_sfp_name
+                     If the PHY drives an SFP cage, this field contains the
+                     name of the associated SFP bus.
+
+              upstream_type  mac | phy
+                     Indicates the nature of the device the PHY is attached
+                     to.
+
+              upstream_index
+                     If the PHY's upstream_type is phy , this field indi‐
+                     cates the phy_index of the upstream phy.
+
+              upstream_sfp_name
+                     If the PHY is withing an SFP/SFF module, this field
+                     contains the name of the upstream SFP bus.
