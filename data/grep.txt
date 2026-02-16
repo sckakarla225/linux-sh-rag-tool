@@ -425,14 +425,28 @@ THE BACKSLASH CHARACTER AND SPECIAL EXPRESSIONS
 REPETITION
        A regular expression may be followed by one of several repetition
        operators:
-       ? - The preceding item is optional and matched at most once.
-       * - The preceding item will be matched zero or more times.
-       + - The preceding item will be matched one or more times.
-       {n} - The preceding item is matched exactly n times.
-       {n,} - The preceding item is matched n or more times.
-       {,m} - The preceding item is matched at most m times.  This is a
+
+       ?
+              The preceding item is optional and matched at most once.
+       
+       *
+              The preceding item will be matched zero or more times.
+       
+       + -
+              The preceding item will be matched one or more times.
+       
+       {n}
+              The preceding item is matched exactly n times.
+       
+       {n,}
+              The preceding item is matched n or more times.
+       
+       {,m}
+              The preceding item is matched at most m times.  This is a
               GNU extension.
-       {n,m} - The preceding item is matched at least n times, but not
+       
+       {n,m}
+              The preceding item is matched at least n times, but not
               more than m times.
 
 CONCATENATION
@@ -462,9 +476,6 @@ BASIC VS EXTENDED REGULAR EXPRESSIONS
        versions \?, \+, \{, \|, \(, and \).
 
 ENVIRONMENT
-       The behavior of grep is affected by the following environment
-       variables.
-
        The locale for category LC_foo is specified by examining the three
        environment variables LC_ALL, LC_foo, LANG, in that order.  The
        first of these variables that is set specifies the locale.  For
@@ -484,90 +495,79 @@ ENVIRONMENT
               rv and ne boolean capabilities omitted (i.e., false).
               Supported capabilities are as follows.
 
-              sl=
-                     SGR substring for whole selected lines (i.e.,
-                     matching lines when the -v command-line option is
-                     omitted, or non-matching lines when -v is
-                     specified).  If however the boolean rv capability
-                     and the -v command-line option are both specified,
-                     it applies to context matching lines instead.  The
-                     default is empty (i.e., the terminal's default color
-                     pair).
+              sl= : SGR substring for whole selected lines (i.e.,
+              matching lines when the -v command-line option is
+              omitted, or non-matching lines when -v is
+              specified).  If however the boolean rv capability
+              and the -v command-line option are both specified,
+              it applies to context matching lines instead.  The
+              default is empty (i.e., the terminal's default color
+              pair).
 
-              cx=
-                     SGR substring for whole context lines (i.e., non-
-                     matching lines when the -v command-line option is
-                     omitted, or matching lines when -v is specified).
-                     If however the boolean rv capability and the -v
-                     command-line option are both specified, it applies
-                     to selected non-matching lines instead.  The default
-                     is empty (i.e., the terminal's default color pair).
+              cx= : SGR substring for whole context lines (i.e., non-
+              matching lines when the -v command-line option is
+              omitted, or matching lines when -v is specified).
+              If however the boolean rv capability and the -v
+              command-line option are both specified, it applies
+              to selected non-matching lines instead.  The default
+              is empty (i.e., the terminal's default color pair).
 
-              rv
-                     Boolean value that reverses (swaps) the meanings of
-                     the sl= and cx= capabilities when the -v command-
-                     line option is specified.  The default is false
-                     (i.e., the capability is omitted).
+              rv : Boolean value that reverses (swaps) the meanings of
+              the sl= and cx= capabilities when the -v command-
+              line option is specified.  The default is false
+              (i.e., the capability is omitted).
 
-              mt=01;31
-                     SGR substring for matching non-empty text in any
-                     matching line (i.e., a selected line when the -v
-                     command-line option is omitted, or a context line
-                     when -v is specified).  Setting this is equivalent
-                     to setting both ms= and mc= at once to the same
-                     value.  The default is a bold red text foreground
-                     over the current line background.
+              mt=01;31 : SGR substring for matching non-empty text in any
+              matching line (i.e., a selected line when the -v
+              command-line option is omitted, or a context line
+              when -v is specified).  Setting this is equivalent
+              to setting both ms= and mc= at once to the same
+              value.  The default is a bold red text foreground
+              over the current line background.
 
-              ms=01;31
-                     SGR substring for matching non-empty text in a
-                     selected line.  (This is only used when the -v
-                     command-line option is omitted.)  The effect of the
-                     sl= (or cx= if rv) capability remains active when
-                     this kicks in.  The default is a bold red text
-                     foreground over the current line background.
+              ms=01;31 : SGR substring for matching non-empty text in a
+              selected line. (This is only used when the -v
+              command-line option is omitted.)  The effect of the
+              sl= (or cx= if rv) capability remains active when
+              this kicks in.  The default is a bold red text
+              foreground over the current line background.
 
-              mc=01;31
-                     SGR substring for matching non-empty text in a
-                     context line.  (This is only used when the -v
-                     command-line option is specified.)  The effect of
-                     the cx= (or sl= if rv) capability remains active
-                     when this kicks in.  The default is a bold red text
-                     foreground over the current line background.
+              mc=01;31 : SGR substring for matching non-empty text in a
+              context line. (This is only used when the -v
+              command-line option is specified.)  The effect of
+              the cx= (or sl= if rv) capability remains active
+              when this kicks in.  The default is a bold red text
+              foreground over the current line background.
 
-              fn=35
-                     SGR substring for file names prefixing any content
-                     line.  The default is a magenta text foreground over
-                     the terminal's default background.
+              fn=35 : SGR substring for file names prefixing any content
+              line. The default is a magenta text foreground over
+              the terminal's default background.
 
-              ln=32
-                     SGR substring for line numbers prefixing any content
-                     line.  The default is a green text foreground over
-                     the terminal's default background.
+              ln=32 : SGR substring for line numbers prefixing any content
+              line. The default is a green text foreground over
+              the terminal's default background.
 
-              bn=32
-                     SGR substring for byte offsets prefixing any content
-                     line.  The default is a green text foreground over
-                     the terminal's default background.
+              bn=32 : SGR substring for byte offsets prefixing any content
+              line. The default is a green text foreground over
+              the terminal's default background.
 
-              se=36
-                     SGR substring for separators that are inserted
-                     between selected line fields (:), between context
-                     line fields, (-), and between groups of adjacent
-                     lines when nonzero context is specified (--).  The
-                     default is a cyan text foreground over the
-                     terminal's default background.
+              se=36 : SGR substring for separators that are inserted
+              between selected line fields (:), between context
+              line fields, (-), and between groups of adjacent
+              lines when nonzero context is specified (--).  The
+              default is a cyan text foreground over the
+              terminal's default background.
 
-              ne
-                     Boolean value that prevents clearing to the end of
-                     line using Erase in Line (EL) to Right (\33[K) each
-                     time a colorized item ends.  This is needed on
-                     terminals on which EL is not supported.  It is
-                     otherwise useful on terminals for which the
-                     back_color_erase (bce) boolean terminfo capability
-                     does not apply, when the chosen highlight colors do
-                     not affect the background, or when EL is too slow or
-                     causes too much flicker.  The default is false
-                     (i.e., the capability is omitted).
+              ne : Boolean value that prevents clearing to the end of
+              line using Erase in Line (EL) to Right (\33[K) each
+              time a colorized item ends.  This is needed on
+              terminals on which EL is not supported.  It is
+              otherwise useful on terminals for which the
+              back_color_erase (bce) boolean terminfo capability
+              does not apply, when the chosen highlight colors do
+              not affect the background, or when EL is too slow or
+              causes too much flicker.  The default is false
+              (i.e., the capability is omitted).
               
               Note that boolean capabilities have no =... part.  They are
               omitted (i.e., false) by default and become true when
@@ -606,7 +606,7 @@ ENVIRONMENT
        LC_ALL, LC_MESSAGES, LANG
               These variables specify the locale for the LC_MESSAGES
               category, which determines the language that grep uses for
-              messages.  The default C locale uses American English
+              messages. The default C locale uses American English
               messages.
        
        POSIXLY_CORRECT
@@ -626,11 +626,8 @@ EXAMPLE
        option outputs line numbers, the -- argument treats expansions of
        “*g*.h” starting with “-” as file names not options, and the empty
        file /dev/null causes file names to be output even if only one
-       file name happens to be of the form “*g*.h”.
-
-       $ grep -n -- 'f.*\.c$' *g*.h /dev/null
-       argmatch.h:1:/* definitions and prototypes for argmatch.c
-
-       The only line that matches is line 1 of argmatch.h.  Note that the
-       regular expression syntax used in the pattern differs from the
-       globbing syntax that the shell uses to match file names.
+       file name happens to be of the form “*g*.h”. The only line that matches 
+       is line 1 of argmatch.h.  Note that the regular expression syntax 
+       used in the pattern differs from the globbing syntax that the shell
+       uses to match file names.
+              grep -n -- 'f.*\.c$' *g*.h /dev/null

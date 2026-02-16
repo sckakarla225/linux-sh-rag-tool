@@ -15,7 +15,7 @@ OPTIONS
        -b, --number-nonblank
               number nonempty output lines, overrides -n
 
-       -e    
+       -e
               equivalent to -vE
 
        -E, --show-ends
@@ -46,9 +46,8 @@ OPTIONS
               output version information and exit
 
 EXAMPLES
-       cat f - g
-              Output f's contents, then standard input, then g's
-              contents.
+       Output f's contents, then standard input, then g's contents.
+              cat f - g
 
-       cat
-              Copy standard input to standard output.
+       Copy standard input to standard output.
+              cat

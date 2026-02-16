@@ -47,7 +47,6 @@ DESCRIPTION
        then the hostname.
 
        Example 1. A representative Nmap scan
-
        # nmap -A -T4 scanme.nmap.org
 
        Nmap scan report for scanme.nmap.org (74.207.244.221)
@@ -82,192 +81,74 @@ DESCRIPTION
        https://nmap.org/book/man.html .  It is also included as a chapter
        of Nmap Network Scanning: The Official Nmap Project Guide to
        Network Discovery and Security Scanning (see
-       https://nmap.org/book/ ).
+       https://nmap.org/book/).
 
-TARGET SPECIFICATION
-       Everything on the Nmap command-line that isn't an option (or
-       option argument) is treated as a target host specification. The
-       simplest case is to specify a target IP address or hostname for
-       scanning.
+PORT SCANNING BASICS
+       While Nmap has grown in functionality over the years, it began as
+       an efficient port scanner, and that remains its core function. The
+       simple command nmap target scans 1,000 TCP ports on the host
+       target. While many port scanners have traditionally lumped all
+       ports into the open or closed states, Nmap is much more granular.
+       It divides ports into six states: open, closed, filtered,
+       unfiltered, open|filtered, or closed|filtered.
 
-       When a hostname is given as a target, it is resolved via the
-       Domain Name System (DNS) to determine the IP address to scan. If
-       the name resolves to more than one IP address, only the first one
-       will be scanned. To make Nmap scan all the resolved addresses
-       instead of only the first one, use the --resolve-all option.
+       These states are not intrinsic properties of the port itself, but
+       describe how Nmap sees them. For example, an Nmap scan from the
+       same network as the target may show port 135/tcp as open, while a
+       scan at the same time with the same options from across the
+       Internet might show that port as filtered. The six port states 
+       recognized by Nmap:
 
-       Sometimes you wish to scan a whole network of adjacent hosts. For
-       this, Nmap supports CIDR-style addressing. You can append /numbits
-       to an IP address or hostname and Nmap will scan every IP address
-       for which the first numbits are the same as for the reference IP
-       or hostname given. For example, 192.168.10.0/24 would scan the 256
-       hosts between 192.168.10.0 (binary: 11000000 10101000 00001010
-       00000000) and 192.168.10.255 (binary: 11000000 10101000 00001010
-       11111111), inclusive.  192.168.10.40/24 would scan exactly the
-       same targets. Given that the host scanme.nmap.org is at the IP
-       address 64.13.134.52, the specification scanme.nmap.org/16 would
-       scan the 65,536 IP addresses between 64.13.0.0 and 64.13.255.255.
-       The smallest allowed value is /0, which targets the whole
-       Internet. The largest value for IPv4 is /32, which scans just the
-       named host or IP address because all address bits are fixed. The
-       largest value for IPv6 is /128, which does the same thing.
+       open - An application is actively accepting TCP connections, UDP
+       datagrams or SCTP associations on this port. Finding these is
+       often the primary goal of port scanning. Security-minded
+       people know that each open port is an avenue for attack.
+       Attackers and pen-testers want to exploit the open ports,
+       while administrators try to close or protect them with
+       firewalls without thwarting legitimate users. Open ports are
+       also interesting for non-security scans because they show
+       services available for use on the network.
 
-       CIDR notation is short but not always flexible enough. For
-       example, you might want to scan 192.168.0.0/16 but skip any IPs
-       ending with .0 or .255 because they may be used as subnet network
-       and broadcast addresses. Nmap supports this through octet range
-       addressing. Rather than specify a normal IP address, you can
-       specify a comma-separated list of numbers or ranges for each
-       octet. For example, 192.168.0-255.1-254 will skip all addresses in
-       the range that end in .0 or .255, and 192.168.3-5,7.1 will scan
-       the four addresses 192.168.3.1, 192.168.4.1, 192.168.5.1, and
-       192.168.7.1. Either side of a range may be omitted; the default
-       values are 0 on the left and 255 on the right. Using - by itself
-       is the same as 0-255, but remember to use 0- in the first octet so
-       the target specification doesn't look like a command-line option.
-       Ranges need not be limited to the final octets: the specifier
-       0-255.0-255.13.37 will perform an Internet-wide scan for all IP
-       addresses ending in 13.37. This sort of broad sampling can be
-       useful for Internet surveys and research.
+       closed - A closed port is accessible (it receives and responds to Nmap
+       probe packets), but there is no application listening on it.
+       They can be helpful in showing that a host is up on an IP
+       address (host discovery, or ping scanning), and as part of OS
+       detection. Because closed ports are reachable, it may be worth
+       scanning later in case some open up. Administrators may want
+       to consider blocking such ports with a firewall. Then they
+       would appear in the filtered state, discussed next.
 
-       IPv6 addresses can be specified by their fully qualified IPv6
-       address or hostname or with CIDR notation for subnets. Octet
-       ranges aren't yet supported for IPv6.
+       filtered - Nmap cannot determine whether the port is open because packet
+       filtering prevents its probes from reaching the port. The
+       filtering could be from a dedicated firewall device, router
+       rules, or host-based firewall software. These ports frustrate
+       attackers because they provide so little information.
+       Sometimes they respond with ICMP error messages such as type 3
+       code 13 (destination unreachable: communication
+       administratively prohibited), but filters that simply drop
+       probes without responding are far more common. This forces
+       Nmap to retry several times just in case the probe was dropped
+       due to network congestion rather than filtering. This slows
+       down the scan dramatically.
 
-       IPv6 addresses with non-global scope need to have a zone ID
-       suffix. On Unix systems, this is a percent sign followed by an
-       interface name; a complete address might be
-       fe80::a8bb:ccff:fedd:eeff%eth0. On Windows, use an interface index
-       number in place of an interface name: fe80::a8bb:ccff:fedd:eeff%1.
-       You can see a list of interface indexes by running the command
-       netsh.exe interface ipv6 show interface.
+       unfiltered - The unfiltered state means that a port is accessible, but Nmap
+       is unable to determine whether it is open or closed. Only the
+       ACK scan, which is used to map firewall rulesets, classifies
+       ports into this state. Scanning unfiltered ports with other
+       scan types such as Window scan, SYN scan, or FIN scan, may
+       help resolve whether the port is open.
 
-       Nmap accepts multiple host specifications on the command line, and
-       they don't need to be the same type. The command nmap
-       scanme.nmap.org 192.168.0.0/8 10.0.0,1,3-7.- does what you would
-       expect.
+       open|filtered - Nmap places ports in this state when it is unable to determine
+       whether a port is open or filtered. This occurs for scan types
+       in which open ports give no response. The lack of response
+       could also mean that a packet filter dropped the probe or any
+       response it elicited. So Nmap does not know for sure whether
+       the port is open or being filtered. The UDP, IP protocol, FIN,
+       NULL, and Xmas scans classify ports this way.
 
-       While targets are usually specified on the command lines, the
-       following options are also available to control target selection:
-
-       -iL inputfilename 
-              (Input from list)
-              Reads target specifications from inputfilename. Passing a huge
-              list of hosts is often awkward on the command line, yet it is
-              a common desire. For example, your DHCP server might export a
-              list of 10,000 current leases that you wish to scan. Or maybe
-              you want to scan all IP addresses except for those to locate
-              hosts using unauthorized static IP addresses. Simply generate
-              the list of hosts to scan and pass that filename to Nmap as an
-              argument to the -iL option. Entries can be in any of the
-              formats accepted by Nmap on the command line (IP address,
-              hostname, CIDR, IPv6, or octet ranges). Each entry must be
-              separated by one or more spaces, tabs, or newlines. You can
-              specify a hyphen (-) as the filename if you want Nmap to read
-              hosts from standard input rather than an actual file.
-
-              The input file may contain comments that start with # and
-              extend to the end of the line.
-
-       -iR num hosts 
-              (Choose random targets)
-              For Internet-wide surveys and other research, you may want to
-              choose targets at random. The num hosts argument tells Nmap
-              how many IPs to generate. Undesirable IPs such as those in
-              certain private, multicast, or unallocated address ranges are
-              automatically skipped. The argument 0 can be specified for a
-              never-ending scan. Keep in mind that some network
-              administrators bristle at unauthorized scans of their networks
-              and may complain. Use this option at your own risk! If you
-              find yourself really bored one rainy afternoon, try the
-              command nmap -Pn -sS -p 80 -iR 0 --open to locate random web
-              servers for browsing.
-
-       --exclude host1[,host2[,...]] 
-              (Exclude hosts/networks)
-              Specifies a comma-separated list of targets to be excluded
-              from the scan even if they are part of the overall network
-              range you specify. The list you pass in uses normal Nmap
-              syntax, so it can include hostnames, CIDR netblocks, octet
-              ranges, etc. This can be useful when the network you wish to
-              scan includes untouchable mission-critical servers, systems
-              that are known to react adversely to port scans, or subnets
-              administered by other people.
-
-       --excludefile exclude_file 
-              (Exclude list from file)
-              This offers the same functionality as the --exclude option,
-              except that the excluded targets are provided in a newline-,
-              space-, or tab-delimited exclude_file rather than on the
-              command line.
-
-              The exclude file may contain comments that start with # and
-              extend to the end of the line.
-
-       -n
-              (No reverse DNS resolution)
-              Tells Nmap to never do reverse DNS resolution on the active IP
-              addresses it finds. Since DNS can be slow even with Nmap's
-              built-in parallel stub resolver, this option can slash
-              scanning times.
-
-       -R
-              (Reverse DNS resolution for all targets)
-              Tells Nmap to always do reverse DNS resolution on the target
-              IP addresses. Normally reverse DNS is only performed against
-              responsive (online) hosts.
-
-       --resolve-all
-              (Scan each resolved address)
-              If a hostname target resolves to more than one address, scan
-              all of them. The default behavior is to only scan the first
-              resolved address. Regardless, only addresses in the
-              appropriate address family will be scanned: IPv4 by default,
-              IPv6 with -6.
-
-       --unique
-              (Scan each address only once)
-              Scan each IP address only once. The default behavior is to
-              scan each address as many times as it is specified in the
-              target list, such as when network ranges overlap or different
-              hostnames resolve to the same address.
-
-       --system-dns
-              (Use system DNS resolver)
-              By default, Nmap resolves names to IP addresses (and IP
-              addresses to names) by sending queries directly to the name
-              servers configured on your host and then listening for
-              responses. Many requests (often dozens) are performed in
-              parallel to improve performance. Specify this option to use
-              your system resolver instead (one IP at a time via the
-              getnameinfo call). This is slower and rarely useful unless you
-              find a bug in the Nmap parallel resolver (please let us know
-              if you do).
-
-       --dns-servers server1[,server2[,...]]
-              (Servers to use for DNS queries)
-              By default, Nmap determines your DNS servers from your
-              resolv.conf file (Unix) or the Registry (Win32).
-              Alternatively, you may use this option to specify alternate
-              servers. This option is not honored if you are using
-              --system-dns. Using multiple DNS servers is often faster,
-              especially if you choose authoritative servers for your target
-              IP space. This option can also improve stealth, as your
-              requests can be bounced off just about any recursive DNS
-              server on the Internet.
-
-              This option also comes in handy when scanning private
-              networks. Sometimes only a few name servers provide proper DNS
-              information, and you may not even know where they are. You can
-              scan the network for port 53 (perhaps with version detection),
-              then try Nmap list scans (-sL) specifying each name server one
-              at a time with --dns-servers until you find one which works.
-
-              This option might not be honored if the DNS response exceeds
-              the size of a UDP packet. In such a situation our DNS resolver
-              will make the best effort to extract a response from the
-              truncated packet, and if not successful it will fall back to
-              using the system resolver.
+       closed|filtered - This state is used when Nmap is unable to 
+       determine whether a port is closed or filtered. It is only used 
+       for the IP ID idle scan.
 
 HOST DISCOVERY
        One of the very first steps in any network reconnaissance mission
@@ -656,7 +537,7 @@ HOST DISCOVERY
               is being scanned (i.e. 192.168.0.0/24) Nmap may only have to
               send two packets to most hosts.
 
-PORT SCANNING BASICS
+
        While Nmap has grown in functionality over the years, it began as
        an efficient port scanner, and that remains its core function. The
        simple command nmap target scans 1,000 TCP ports on the host
@@ -938,15 +819,12 @@ PORT SCANNING TECHNIQUES
               combination of the other three (FIN, PSH, and URG) are OK.
               Nmap exploits this with three scan types:
 
-              Null scan (-sN)
-                     Does not set any bits (TCP flag header is 0)
+              Null scan (-sN) - Does not set any bits (TCP flag header is 0)
 
-              FIN scan (-sF)
-                     Sets just the TCP FIN bit.
+              FIN scan (-sF) - Sets just the TCP FIN bit.
 
-              Xmas scan (-sX)
-                     Sets the FIN, PSH, and URG flags, lighting the packet up
-                     like a Christmas tree.
+              Xmas scan (-sX) - Sets the FIN, PSH, and URG flags, 
+              lighting the packet up like a Christmas tree.
 
               These three scan types are exactly the same in behavior except
               for the TCP flags set in probe packets. If a RST packet is
@@ -1167,88 +1045,6 @@ PORT SCANNING TECHNIQUES
               target network. Before you go scanning random Internet
               addresses for vulnerable FTP servers, consider that sysadmins
               may not appreciate you abusing their servers in this way.
-       
-PORT SPECIFICATION AND SCAN ORDER
-       In addition to all of the scan methods discussed previously, Nmap
-       offers options for specifying which ports are scanned and whether
-       the scan order is randomized or sequential. By default, Nmap scans
-       the most common 1,000 ports for each protocol.
-
-       -p port ranges 
-              (Only scan specified ports)
-              This option specifies which ports you want to scan and
-              overrides the default. Individual port numbers are OK, as are
-              ranges separated by a hyphen (e.g.  1-1023). The beginning
-              and/or end values of a range may be omitted, causing Nmap to
-              use 1 and 65535, respectively. So you can specify -p- to scan
-              ports from 1 through 65535. Scanning port zero is allowed if
-              you specify it explicitly. For IP protocol scanning (-sO),
-              this option specifies the protocol numbers you wish to scan
-              for (0–255).
-
-              When scanning a combination of protocols (e.g. TCP and UDP),
-              you can specify a particular protocol by preceding the port
-              numbers by T: for TCP, U: for UDP, S: for SCTP, or P: for IP
-              Protocol. The qualifier lasts until you specify another
-              qualifier. For example, the argument -p
-              U:53,111,137,T:21-25,80,139,8080 would scan UDP ports 53,
-              111,and 137, as well as the listed TCP ports. Note that to
-              scan both UDP and TCP, you have to specify -sU and at least
-              one TCP scan type (such as -sS, -sF, or -sT). If no protocol
-              qualifier is given, the port numbers are added to all protocol
-              lists.  Ports can also be specified by name according to what
-              the port is referred to in the nmap-services. You can even use
-              the wildcards * and ?  with the names. For example, to scan
-              FTP and all ports whose names begin with “http”, use -p
-              ftp,http*. Be careful about shell expansions and quote the
-              argument to -p if unsure.
-
-              Ranges of ports can be surrounded by square brackets to
-              indicate ports inside that range that appear in nmap-services.
-              For example, the following will scan all ports in
-              nmap-services equal to or below 1024: -p [-1024]. Be careful
-              with shell expansions and quote the argument to -p if unsure.
-
-       --exclude-ports port ranges 
-              (Exclude the specified ports from scanning)
-              This option specifies which ports you do want Nmap to exclude
-              from scanning. The port ranges are specified similar to -p.
-              For IP protocol scanning (-sO), this option specifies the
-              protocol numbers you wish to exclude (0–255).
-
-              When ports are asked to be excluded, they are excluded from
-              all types of scans (i.e. they will not be scanned under any
-              circumstances). This also includes the discovery phase.
-
-       -F
-              (Fast (limited port) scan)
-              Specifies that you wish to scan fewer ports than the default.
-              Normally Nmap scans the most common 1,000 ports for each
-              scanned protocol. With -F, this is reduced to 100.
-
-              Nmap needs an nmap-services file with frequency information in
-              order to know which ports are the most common. If port
-              frequency information isn't available, perhaps because of the
-              use of a custom nmap-services file, Nmap scans all named ports
-              plus ports 1-1024. In that case, -F means to scan only ports
-              that are named in the services file.
-
-       -r
-              (Don't randomize ports)
-              By default, Nmap randomizes the scanned port order (except
-              that certain commonly accessible ports are moved near the
-              beginning for efficiency reasons). This randomization is
-              normally desirable, but you can specify -r for sequential
-              (sorted from lowest to highest) port scanning instead.
-
-       --port-ratio ratio<decimal number between 0 and 1>
-           Scans all ports in nmap-services file with a ratio greater
-           than the one given.  ratio must be between 0.0 and 1.0.
-
-       --top-ports n
-           Scans the n highest-ratio ports found in nmap-services file
-           after excluding all ports specified by --exclude-ports.  n
-           must be 1 or greater.
 
 SERVICE AND VERSION DETECTION
        Point Nmap at a remote machine and it might tell you that ports
@@ -1460,184 +1256,6 @@ OS DETECTION
               favorable. This is rarely done, except to generate better
               fingerprints for submission and integration into the Nmap OS
               database.
-
-NMAP SCRIPTING ENGINE (NSE)
-       The Nmap Scripting Engine (NSE) is one of Nmap's most powerful and
-       flexible features. It allows users to write (and share) simple
-       scripts (using the Lua programming language[10]
-
-       ) to automate a wide variety of networking tasks. Those scripts
-       are executed in parallel with the speed and efficiency you expect
-       from Nmap. Users can rely on the growing and diverse set of
-       scripts distributed with Nmap, or write their own to meet custom
-       needs.
-
-       Tasks we had in mind when creating the system include network
-       discovery, more sophisticated version detection, vulnerability
-       detection. NSE can even be used for vulnerability exploitation.
-
-       To reflect those different uses and to simplify the choice of
-       which scripts to run, each script contains a field associating it
-       with one or more categories. Currently defined categories are
-       auth, broadcast, default.  discovery, dos, exploit, external,
-       fuzzer, intrusive, malware, safe, version, and vuln. These are all
-       described at https://nmap.org/book/nse-usage.html#nse-categories .
-
-       Scripts are not run in a sandbox and thus could accidentally or
-       maliciously damage your system or invade your privacy. Never run
-       scripts from third parties unless you trust the authors or have
-       carefully audited the scripts yourself.
-
-       The Nmap Scripting Engine is described in detail at
-       https://nmap.org/book/nse.html 
-
-       and is controlled by the following options:
-
-       -sC
-              Performs a script scan using the default set of scripts. It is
-              equivalent to --script=default. Some of the scripts in this
-              category are considered intrusive and should not be run
-              against a target network without permission.
-
-              Note that this shorthand option is ignored whenever at least
-              one --script is also specified.
-
-       --script filename|category|directory/|expression[,...]
-              Runs a script scan using the comma-separated list of
-              filenames, script categories, and directories. Each element in
-              the list may also be a Boolean expression describing a more
-              complex set of scripts. Each element is interpreted first as
-              an expression, then as a category, and finally as a file or
-              directory name.
-
-              There are two special features for advanced users only. One is
-              to prefix script names and expressions with + to force them to
-              run even if they normally wouldn't (e.g. the relevant service
-              wasn't detected on the target port). The other is that the
-              argument all may be used to specify every script in Nmap's
-              database. Be cautious with this because NSE contains dangerous
-              scripts such as exploits, brute force authentication crackers,
-              and denial of service attacks.
-
-              File and directory names may be relative or absolute. Absolute
-              names are used directly. Relative paths are looked for in the
-              scripts of each of the following places until found:
-              --datadir
-              $NMAPDIR
-              ~/.nmap (not searched on Windows)
-              APPDATA\nmap (only on Windows)
-              the directory containing the nmap executable
-              the directory containing the nmap executable, followed by
-              ../share/nmap (not searched on Windows)
-              NMAPDATADIR (not searched on Windows)
-              the current directory.
-
-              When a directory name ending in / is given, Nmap loads every
-              file in the directory whose name ends with .nse. All other
-              files are ignored and directories are not searched
-              recursively. When a filename is given, it does not have to
-              have the .nse extension; it will be added automatically if
-              necessary.  Nmap scripts are stored in a scripts subdirectory
-              of the Nmap data directory by default (see
-              https://nmap.org/book/data-files.html ).
-
-              For efficiency, scripts are indexed in a database stored in
-              scripts/script.db, which lists the category or categories in
-              which each script belongs.  When referring to scripts from
-              script.db by name, you can use a shell-style ‘*’ wildcard.
-
-              nmap --script "http-*"
-                     Loads all scripts whose name starts with http-, such as
-                     http-auth and http-open-proxy. The argument to --script
-                     had to be in quotes to protect the wildcard from the
-                     shell.
-
-              More complicated script selection can be done using the and,
-              or, and not operators to build Boolean expressions. The
-              operators have the same precedence[11] as in Lua: not is the
-              highest, followed by and and then or. You can alter precedence
-              by using parentheses. Because expressions contain space
-              characters it is necessary to quote them.
-
-              nmap --script "not intrusive"
-                     Loads every script except for those in the intrusive
-                     category.
-
-              nmap --script "default or safe"
-                     This is functionally equivalent to nmap --script
-                     "default,safe". It loads all scripts that are in the
-                     default category or the safe category or both.
-
-              nmap --script "default and safe"
-                     Loads those scripts that are in both the default and safe
-                     categories.
-
-              nmap --script "(default or safe or intrusive) and not http-*"
-                     Loads scripts in the default, safe, or intrusive
-                     categories, except for those whose names start with http-.
-
-       --script-args n1=v1,n2={n3=v3},n4={v4,v5}
-              Lets you provide arguments to NSE scripts. Arguments are a
-              comma-separated list of name=value pairs. Names and values may
-              be strings not containing whitespace or the characters ‘{’,
-              ‘}’, ‘=’, or ‘,’. To include one of these characters in a
-              string, enclose the string in single or double quotes. Within
-              a quoted string, ‘\’ escapes a quote. A backslash is only used
-              to escape quotation marks in this special case; in all other
-              cases a backslash is interpreted literally. Values may also be
-              tables enclosed in {}, just as in Lua. A table may contain
-              simple string values or more name-value pairs, including
-              nested tables. Many scripts qualify their arguments with the
-              script name, as in xmpp-info.server_name. You may use that
-              full qualified version to affect just the specified script, or
-              you may pass the unqualified version (server_name in this
-              case) to affect all scripts using that argument name. A script
-              will first check for its fully qualified argument name (the
-              name specified in its documentation) before it accepts an
-              unqualified argument name. A complex example of script
-              arguments is --script-args
-              'user=foo,pass=",{}=bar",whois={whodb=nofollow+ripe},xmpp-info.server_name=localhost'.
-              The online NSE Documentation Portal at
-              https://nmap.org/nsedoc/ lists the arguments that each script
-              accepts.
-
-       --script-args-file filename
-              Lets you load arguments to NSE scripts from a file. Any
-              arguments on the command line supersede ones in the file. The
-              file can be an absolute path, or a path relative to Nmap's
-              usual search path (NMAPDIR, etc.) Arguments can be
-              comma-separated or newline-separated, but otherwise follow the
-              same rules as for --script-args, without requiring special
-              quoting and escaping, since they are not parsed by the shell.
-
-       --script-help filename|category|directory|expression|all[,...]
-              Shows help about scripts. For each script matching the given
-              specification, Nmap prints the script name, its categories,
-              and its description. The specifications are the same as those
-              accepted by --script; so for example if you want help about
-              the ftp-anon script, you would run nmap --script-help
-              ftp-anon. In addition to getting help for individual scripts,
-              you can use this as a preview of what scripts will be run for
-              a specification, for example with nmap --script-help default.
-
-       --script-trace
-              This option does what --packet-trace does, just one ISO layer
-              higher. If this option is specified all incoming and outgoing
-              communication performed by a script is printed. The displayed
-              information includes the communication protocol, the source,
-              the target and the transmitted data. If more than 5% of all
-              transmitted data is not printable, then the trace output is in
-              a hex dump format. Specifying --packet-trace enables script
-              tracing too.
-
-       --script-updatedb
-              This option updates the script database found in
-              scripts/script.db which is used by Nmap to determine the
-              available default scripts and categories. It is only necessary
-              to update the database if you have added or removed NSE
-              scripts from the default scripts directory or if you have
-              changed the categories of any script. This option is generally
-              used by itself: nmap --script-updatedb.
 
 TIMING AND PERFORMANCE
        One of my highest Nmap development priorities has always been
@@ -2268,8 +1886,7 @@ FIREWALL/IDS EVASION AND SPOOFING
               portscan packets support this. It slows things down a little,
               but can make a scan slightly less conspicuous.
 
-       --ip-options R|S [route]|L [route]|T|U ... ; --ip-options hex
-       string
+       --ip-options R|S [route]|L [route]|T|U ... ; --ip-options hex string
               (Send packets with specified ip options)
               The IP protocol[12] offers several options which may be placed
               in packet headers. Unlike the ubiquitous TCP options, IP
@@ -2388,6 +2005,685 @@ FIREWALL/IDS EVASION AND SPOOFING
               implementations should be using CRC-32C, but in order to
               elicit responses from old, legacy SCTP implementations, it may
               be preferable to use Adler32.
+
+VERBOSITY AND DEBUGGING OPTIONS 
+       -v (Increase verbosity level), -vlevel (Set verbosity level)
+              Increases the verbosity level, causing Nmap to print more
+              information about the scan in progress. Open ports are shown
+              as they are found and completion time estimates are provided
+              when Nmap thinks a scan will take more than a few minutes. Use
+              it twice or more for even greater verbosity: -vv, or give a
+              verbosity level directly, for example -v3.
+
+              Most changes only affect interactive output, and some also
+              affect normal and script kiddie output. The other output types
+              are meant to be processed by machines, so Nmap can give
+              substantial detail by default in those formats without
+              fatiguing a human user. However, there are a few changes in
+              other modes where output size can be reduced substantially by
+              omitting some detail. For example, a comment line in the
+              grepable output that provides a list of all ports scanned is
+              only printed in verbose mode because it can be quite long.
+
+       -d (Increase debugging level), -dlevel (Set debugging level)
+              When even verbose mode doesn't provide sufficient data for
+              you, debugging is available to flood you with much more! As
+              with the verbosity option (-v), debugging is enabled with a
+              command-line flag (-d) and the debug level can be increased by
+              specifying it multiple times, as in -dd, or by setting a level
+              directly. For example, -d9 sets level nine. That is the
+              highest effective level and will produce thousands of lines
+              unless you run a very simple scan with very few ports and
+              targets.
+
+              Debugging output is useful when a bug is suspected in Nmap, or
+              if you are simply confused as to what Nmap is doing and why.
+              As this feature is mostly intended for developers, debug lines
+              aren't always self-explanatory. You may get something like:
+              Timeout vals: srtt: -1 rttvar: -1 to: 1000000 delta 14987 ==>
+              srtt: 14987 rttvar: 14987 to: 100000. If you don't understand
+              a line, your only recourses are to ignore it, look it up in
+              the source code, or request help from the development list
+              (nmap-dev).  Some lines are self explanatory, but the messages
+              become more obscure as the debug level is increased.
+
+       --reason
+              (Host and port state reasons)
+              Shows the reason each port is set to a specific state and the
+              reason each host is up or down. This option displays the type
+              of the packet that determined a port or hosts state. For
+              example, A RST packet from a closed port or an echo reply from
+              an alive host. The information Nmap can provide is determined
+              by the type of scan or ping. The SYN scan and SYN ping (-sS
+              and -PS) are very detailed, but the TCP connect scan (-sT) is
+              limited by the implementation of the connect system call. This
+              feature is automatically enabled by the debug option (-d) and
+              the results are stored in XML log files even if this option is
+              not specified.
+
+       --stats-every time
+              (Print periodic timing stats)
+              Periodically prints a timing status message after each
+              interval of time. The time is a specification of the kind
+              described in the section called “TIMING AND PERFORMANCE”; so
+              for example, use --stats-every 10s to get a status update
+              every 10 seconds. Updates are printed to interactive output
+              (the screen) and XML output.
+
+       --packet-trace
+              (Trace packets and data sent and received)
+              Causes Nmap to print a summary of every packet sent or
+              received. This is often used for debugging, but is also a
+              valuable way for new users to understand exactly what Nmap is
+              doing under the covers. To avoid printing thousands of lines,
+              you may want to specify a limited number of ports to scan,
+              such as -p20-30. If you only care about the goings on of the
+              version detection subsystem, use --version-trace instead. If
+              you only care about script tracing, specify --script-trace.
+              With --packet-trace, you get all of the above.
+
+       --open
+              (Show only open (or possibly open) ports)
+              Sometimes you only care about ports you can actually connect
+              to (open ones), and don't want results cluttered with closed,
+              filtered, and closed|filtered ports. Output customization is
+              normally done after the scan using tools such as grep, awk,
+              and Perl, but this feature was added due to overwhelming
+              requests. Specify --open to only see hosts with at least one
+              open, open|filtered, or unfiltered port, and only see ports in
+              those states. These three states are treated just as they
+              normally are, which means that open|filtered and unfiltered
+              may be condensed into counts if there are an overwhelming
+              number of them.
+
+              Beginning with Nmap 7.40, the --open option implies
+
+              --defeat-rst-ratelimit, because that option only affects
+              closed and filtered ports, which are hidden by --open.
+
+       --iflist
+              (List interfaces and routes)
+              Prints the interface list and system routes as detected by
+              Nmap and quits. This is useful for debugging routing problems
+              or device mischaracterization (such as Nmap treating a PPP
+              connection as ethernet).
+
+MISCELLANEOUS OPTIONS
+       This section describes some important (and not-so-important)
+       options that don't really fit anywhere else.
+
+       -6
+              (Enable IPv6 scanning)
+              Nmap has IPv6 support for its most popular features. Ping
+              scanning, port scanning, version detection, and the Nmap
+              Scripting Engine all support IPv6. The command syntax is the
+              same as usual except that you also add the -6 option. Of
+              course, you must use IPv6 syntax if you specify an address
+              rather than a hostname. An address might look like
+              3ffe:7501:4819:2000:210:f3ff:fe03:14d0, so hostnames are
+              recommended. The output looks the same as usual, with the IPv6
+              address on the “interesting ports” line being the only IPv6
+              giveaway.
+
+              While IPv6 hasn't exactly taken the world by storm, it gets
+              significant use in some (usually Asian) countries and most
+              modern operating systems support it. To use Nmap with IPv6,
+              both the source and target of your scan must be configured for
+              IPv6. If your ISP (like most of them) does not allocate IPv6
+              addresses to you, free tunnel brokers are widely available and
+              work fine with Nmap. I use the free IPv6 tunnel broker service
+              at http://www.tunnelbroker.net . Other tunnel brokers are
+              listed at Wikipedia[17]. 6to4 tunnels are another popular,
+              free approach.
+
+              On Windows, raw-socket IPv6 scans are supported only on
+              ethernet devices (not tunnels), and only on Windows Vista and
+              later. Use the --unprivileged option in other situations.
+
+       -A
+              (Aggressive scan options)
+              This option enables additional advanced and aggressive
+              options. Presently this enables OS detection (-O), version
+              scanning (-sV), script scanning (-sC) and traceroute
+              (--traceroute).  More features may be added in the future. The
+              point is to enable a comprehensive set of scan options without
+              people having to remember a large set of flags. However,
+              because script scanning with the default set is considered
+              intrusive, you should not use -A against target networks
+              without permission. This option only enables features, and not
+              timing options (such as -T4) or verbosity options (-v) that
+              you might want as well. Options which require privileges (e.g.
+              root access) such as OS detection and traceroute will only be
+              enabled if those privileges are available.
+
+       --datadir directoryname
+              (Specify custom Nmap data file location)
+              Nmap obtains some special data at runtime in files named
+              nmap-service-probes, nmap-services, nmap-protocols, nmap-rpc,
+              nmap-mac-prefixes, and nmap-os-db. If the location of any of
+              these files has been specified (using the --servicedb or
+              --versiondb options), that location is used for that file.
+              After that, Nmap searches these files in the directory
+              specified with the --datadir option (if any). Any files not
+              found there, are searched for in the directory specified by
+              the NMAPDIR environment variable. Next comes ~/.nmap for real
+              and effective UIDs; or on Windows, HOME\AppData\Roaming\nmap
+              (where HOME is the user's home directory, like C:\Users\user).
+              This is followed by the location of the nmap executable and
+              the same location with ../share/nmap appended. Then a
+              compiled-in location such as /usr/local/share/nmap or
+              /usr/share/nmap.
+
+       --servicedb services file
+              (Specify custom services file)
+              Asks Nmap to use the specified services file rather than the
+              nmap-services data file that comes with Nmap. Using this
+              option also causes a fast scan (-F) to be used. See the
+              description for --datadir for more information on Nmap's data
+              files.
+
+       --versiondb service probes file 
+              (Specify custom service probes file)
+              Asks Nmap to use the specified service probes file rather than
+              the nmap-service-probes data file that comes with Nmap. See
+              the description for --datadir for more information on Nmap's
+              data files.
+
+       --send-eth
+              (Use raw ethernet sending)
+              Asks Nmap to send packets at the raw ethernet (data link)
+              layer rather than the higher IP (network) layer. By default,
+              Nmap chooses the one which is generally best for the platform
+              it is running on. Raw sockets (IP layer) are generally most
+              efficient for Unix machines, while ethernet frames are
+              required for Windows operation since Microsoft disabled raw
+              socket support. Nmap still uses raw IP packets on Unix despite
+              this option when there is no other choice (such as
+              non-ethernet connections).
+
+       --send-ip
+              (Send at raw IP level)
+              Asks Nmap to send packets via raw IP sockets rather than
+              sending lower level ethernet frames. It is the complement to
+              the --send-eth option discussed previously.
+
+       --privileged
+              (Assume that the user is fully privileged)
+              Tells Nmap to simply assume that it is privileged enough to
+              perform raw socket sends, packet sniffing, and similar
+              operations that usually require root privileges on Unix
+              systems. By default Nmap quits if such operations are
+              requested but geteuid is not zero.  --privileged is useful
+              with Linux kernel capabilities and similar systems that may be
+              configured to allow unprivileged users to perform raw-packet
+              scans. Be sure to provide this option flag before any flags
+              for options that require privileges (SYN scan, OS detection,
+              etc.). The NMAP_PRIVILEGED environment variable may be set as
+              an equivalent alternative to --privileged.
+
+       --unprivileged
+              (Assume that the user lacks raw socket privileges)
+              This option is the opposite of --privileged. It tells Nmap to
+              treat the user as lacking network raw socket and sniffing
+              privileges. This is useful for testing, debugging, or when the
+              raw network functionality of your operating system is somehow
+              broken. The NMAP_UNPRIVILEGED environment variable may be set
+              as an equivalent alternative to --unprivileged.
+
+       --release-memory
+              (Release memory before quitting)
+              This option is only useful for memory-leak debugging. It
+              causes Nmap to release allocated memory just before it quits
+              so that actual memory leaks are easier to spot. Normally Nmap
+              skips this as the OS does this anyway upon process
+              termination.
+
+       -V; --version
+              (Print version number)
+              Prints the Nmap version number and exits.
+
+       -h; --help
+              (Print help summary page)
+              Prints a short help screen with the most common command flags.
+              Running Nmap without any arguments does the same thing.
+
+TARGET SPECIFICATION
+       Everything on the Nmap command-line that isn't an option (or
+       option argument) is treated as a target host specification. The
+       simplest case is to specify a target IP address or hostname for
+       scanning.
+
+       When a hostname is given as a target, it is resolved via the
+       Domain Name System (DNS) to determine the IP address to scan. If
+       the name resolves to more than one IP address, only the first one
+       will be scanned. To make Nmap scan all the resolved addresses
+       instead of only the first one, use the --resolve-all option.
+
+       Sometimes you wish to scan a whole network of adjacent hosts. For
+       this, Nmap supports CIDR-style addressing. You can append /numbits
+       to an IP address or hostname and Nmap will scan every IP address
+       for which the first numbits are the same as for the reference IP
+       or hostname given. For example, 192.168.10.0/24 would scan the 256
+       hosts between 192.168.10.0 (binary: 11000000 10101000 00001010
+       00000000) and 192.168.10.255 (binary: 11000000 10101000 00001010
+       11111111), inclusive.  192.168.10.40/24 would scan exactly the
+       same targets. Given that the host scanme.nmap.org is at the IP
+       address 64.13.134.52, the specification scanme.nmap.org/16 would
+       scan the 65,536 IP addresses between 64.13.0.0 and 64.13.255.255.
+       The smallest allowed value is /0, which targets the whole
+       Internet. The largest value for IPv4 is /32, which scans just the
+       named host or IP address because all address bits are fixed. The
+       largest value for IPv6 is /128, which does the same thing.
+
+       CIDR notation is short but not always flexible enough. For
+       example, you might want to scan 192.168.0.0/16 but skip any IPs
+       ending with .0 or .255 because they may be used as subnet network
+       and broadcast addresses. Nmap supports this through octet range
+       addressing. Rather than specify a normal IP address, you can
+       specify a comma-separated list of numbers or ranges for each
+       octet. For example, 192.168.0-255.1-254 will skip all addresses in
+       the range that end in .0 or .255, and 192.168.3-5,7.1 will scan
+       the four addresses 192.168.3.1, 192.168.4.1, 192.168.5.1, and
+       192.168.7.1. Either side of a range may be omitted; the default
+       values are 0 on the left and 255 on the right. Using - by itself
+       is the same as 0-255, but remember to use 0- in the first octet so
+       the target specification doesn't look like a command-line option.
+       Ranges need not be limited to the final octets: the specifier
+       0-255.0-255.13.37 will perform an Internet-wide scan for all IP
+       addresses ending in 13.37. This sort of broad sampling can be
+       useful for Internet surveys and research.
+
+       IPv6 addresses can be specified by their fully qualified IPv6
+       address or hostname or with CIDR notation for subnets. Octet
+       ranges aren't yet supported for IPv6.
+
+       IPv6 addresses with non-global scope need to have a zone ID
+       suffix. On Unix systems, this is a percent sign followed by an
+       interface name; a complete address might be
+       fe80::a8bb:ccff:fedd:eeff%eth0. On Windows, use an interface index
+       number in place of an interface name: fe80::a8bb:ccff:fedd:eeff%1.
+       You can see a list of interface indexes by running the command
+       netsh.exe interface ipv6 show interface.
+
+       Nmap accepts multiple host specifications on the command line, and
+       they don't need to be the same type. The command nmap
+       scanme.nmap.org 192.168.0.0/8 10.0.0,1,3-7.- does what you would
+       expect.
+
+       While targets are usually specified on the command lines, the
+       following options are also available to control target selection:
+
+       -iL inputfilename 
+              (Input from list)
+              Reads target specifications from inputfilename. Passing a huge
+              list of hosts is often awkward on the command line, yet it is
+              a common desire. For example, your DHCP server might export a
+              list of 10,000 current leases that you wish to scan. Or maybe
+              you want to scan all IP addresses except for those to locate
+              hosts using unauthorized static IP addresses. Simply generate
+              the list of hosts to scan and pass that filename to Nmap as an
+              argument to the -iL option. Entries can be in any of the
+              formats accepted by Nmap on the command line (IP address,
+              hostname, CIDR, IPv6, or octet ranges). Each entry must be
+              separated by one or more spaces, tabs, or newlines. You can
+              specify a hyphen (-) as the filename if you want Nmap to read
+              hosts from standard input rather than an actual file.
+
+              The input file may contain comments that start with # and
+              extend to the end of the line.
+
+       -iR num hosts 
+              (Choose random targets)
+              For Internet-wide surveys and other research, you may want to
+              choose targets at random. The num hosts argument tells Nmap
+              how many IPs to generate. Undesirable IPs such as those in
+              certain private, multicast, or unallocated address ranges are
+              automatically skipped. The argument 0 can be specified for a
+              never-ending scan. Keep in mind that some network
+              administrators bristle at unauthorized scans of their networks
+              and may complain. Use this option at your own risk! If you
+              find yourself really bored one rainy afternoon, try the
+              command nmap -Pn -sS -p 80 -iR 0 --open to locate random web
+              servers for browsing.
+
+       --exclude host1[,host2[,...]] 
+              (Exclude hosts/networks)
+              Specifies a comma-separated list of targets to be excluded
+              from the scan even if they are part of the overall network
+              range you specify. The list you pass in uses normal Nmap
+              syntax, so it can include hostnames, CIDR netblocks, octet
+              ranges, etc. This can be useful when the network you wish to
+              scan includes untouchable mission-critical servers, systems
+              that are known to react adversely to port scans, or subnets
+              administered by other people.
+
+       --excludefile exclude_file 
+              (Exclude list from file)
+              This offers the same functionality as the --exclude option,
+              except that the excluded targets are provided in a newline-,
+              space-, or tab-delimited exclude_file rather than on the
+              command line.
+
+              The exclude file may contain comments that start with # and
+              extend to the end of the line.
+
+       -n
+              (No reverse DNS resolution)
+              Tells Nmap to never do reverse DNS resolution on the active IP
+              addresses it finds. Since DNS can be slow even with Nmap's
+              built-in parallel stub resolver, this option can slash
+              scanning times.
+
+       -R
+              (Reverse DNS resolution for all targets)
+              Tells Nmap to always do reverse DNS resolution on the target
+              IP addresses. Normally reverse DNS is only performed against
+              responsive (online) hosts.
+
+       --resolve-all
+              (Scan each resolved address)
+              If a hostname target resolves to more than one address, scan
+              all of them. The default behavior is to only scan the first
+              resolved address. Regardless, only addresses in the
+              appropriate address family will be scanned: IPv4 by default,
+              IPv6 with -6.
+
+       --unique
+              (Scan each address only once)
+              Scan each IP address only once. The default behavior is to
+              scan each address as many times as it is specified in the
+              target list, such as when network ranges overlap or different
+              hostnames resolve to the same address.
+
+       --system-dns
+              (Use system DNS resolver)
+              By default, Nmap resolves names to IP addresses (and IP
+              addresses to names) by sending queries directly to the name
+              servers configured on your host and then listening for
+              responses. Many requests (often dozens) are performed in
+              parallel to improve performance. Specify this option to use
+              your system resolver instead (one IP at a time via the
+              getnameinfo call). This is slower and rarely useful unless you
+              find a bug in the Nmap parallel resolver (please let us know
+              if you do).
+
+       --dns-servers server1[,server2[,...]]
+              (Servers to use for DNS queries)
+              By default, Nmap determines your DNS servers from your
+              resolv.conf file (Unix) or the Registry (Win32).
+              Alternatively, you may use this option to specify alternate
+              servers. This option is not honored if you are using
+              --system-dns. Using multiple DNS servers is often faster,
+              especially if you choose authoritative servers for your target
+              IP space. This option can also improve stealth, as your
+              requests can be bounced off just about any recursive DNS
+              server on the Internet.
+
+              This option also comes in handy when scanning private
+              networks. Sometimes only a few name servers provide proper DNS
+              information, and you may not even know where they are. You can
+              scan the network for port 53 (perhaps with version detection),
+              then try Nmap list scans (-sL) specifying each name server one
+              at a time with --dns-servers until you find one which works.
+
+              This option might not be honored if the DNS response exceeds
+              the size of a UDP packet. In such a situation our DNS resolver
+              will make the best effort to extract a response from the
+              truncated packet, and if not successful it will fall back to
+              using the system resolver.
+
+PORT SPECIFICATION AND SCAN ORDER
+       In addition to all of the scan methods discussed previously, Nmap
+       offers options for specifying which ports are scanned and whether
+       the scan order is randomized or sequential. By default, Nmap scans
+       the most common 1,000 ports for each protocol.
+
+       -p port ranges 
+              (Only scan specified ports)
+              This option specifies which ports you want to scan and
+              overrides the default. Individual port numbers are OK, as are
+              ranges separated by a hyphen (e.g.  1-1023). The beginning
+              and/or end values of a range may be omitted, causing Nmap to
+              use 1 and 65535, respectively. So you can specify -p- to scan
+              ports from 1 through 65535. Scanning port zero is allowed if
+              you specify it explicitly. For IP protocol scanning (-sO),
+              this option specifies the protocol numbers you wish to scan
+              for (0–255).
+
+              When scanning a combination of protocols (e.g. TCP and UDP),
+              you can specify a particular protocol by preceding the port
+              numbers by T: for TCP, U: for UDP, S: for SCTP, or P: for IP
+              Protocol. The qualifier lasts until you specify another
+              qualifier. For example, the argument -p
+              U:53,111,137,T:21-25,80,139,8080 would scan UDP ports 53,
+              111,and 137, as well as the listed TCP ports. Note that to
+              scan both UDP and TCP, you have to specify -sU and at least
+              one TCP scan type (such as -sS, -sF, or -sT). If no protocol
+              qualifier is given, the port numbers are added to all protocol
+              lists.  Ports can also be specified by name according to what
+              the port is referred to in the nmap-services. You can even use
+              the wildcards * and ?  with the names. For example, to scan
+              FTP and all ports whose names begin with “http”, use -p
+              ftp,http*. Be careful about shell expansions and quote the
+              argument to -p if unsure.
+
+              Ranges of ports can be surrounded by square brackets to
+              indicate ports inside that range that appear in nmap-services.
+              For example, the following will scan all ports in
+              nmap-services equal to or below 1024: -p [-1024]. Be careful
+              with shell expansions and quote the argument to -p if unsure.
+
+       --exclude-ports port ranges 
+              (Exclude the specified ports from scanning)
+              This option specifies which ports you do want Nmap to exclude
+              from scanning. The port ranges are specified similar to -p.
+              For IP protocol scanning (-sO), this option specifies the
+              protocol numbers you wish to exclude (0–255).
+
+              When ports are asked to be excluded, they are excluded from
+              all types of scans (i.e. they will not be scanned under any
+              circumstances). This also includes the discovery phase.
+
+       -F
+              (Fast (limited port) scan)
+              Specifies that you wish to scan fewer ports than the default.
+              Normally Nmap scans the most common 1,000 ports for each
+              scanned protocol. With -F, this is reduced to 100.
+
+              Nmap needs an nmap-services file with frequency information in
+              order to know which ports are the most common. If port
+              frequency information isn't available, perhaps because of the
+              use of a custom nmap-services file, Nmap scans all named ports
+              plus ports 1-1024. In that case, -F means to scan only ports
+              that are named in the services file.
+
+       -r
+              (Don't randomize ports)
+              By default, Nmap randomizes the scanned port order (except
+              that certain commonly accessible ports are moved near the
+              beginning for efficiency reasons). This randomization is
+              normally desirable, but you can specify -r for sequential
+              (sorted from lowest to highest) port scanning instead.
+
+       --port-ratio ratio<decimal number between 0 and 1>
+              Scans all ports in nmap-services file with a ratio greater
+              than the one given.  ratio must be between 0.0 and 1.0.
+
+       --top-ports n
+              Scans the n highest-ratio ports found in nmap-services file
+              after excluding all ports specified by --exclude-ports.  n
+              must be 1 or greater.
+
+NMAP SCRIPTING ENGINE (NSE)
+       The Nmap Scripting Engine (NSE) is one of Nmap's most powerful and
+       flexible features. It allows users to write (and share) simple
+       scripts (using the Lua programming language[10]
+
+       ) to automate a wide variety of networking tasks. Those scripts
+       are executed in parallel with the speed and efficiency you expect
+       from Nmap. Users can rely on the growing and diverse set of
+       scripts distributed with Nmap, or write their own to meet custom
+       needs.
+
+       Tasks we had in mind when creating the system include network
+       discovery, more sophisticated version detection, vulnerability
+       detection. NSE can even be used for vulnerability exploitation.
+
+       To reflect those different uses and to simplify the choice of
+       which scripts to run, each script contains a field associating it
+       with one or more categories. Currently defined categories are
+       auth, broadcast, default.  discovery, dos, exploit, external,
+       fuzzer, intrusive, malware, safe, version, and vuln. These are all
+       described at https://nmap.org/book/nse-usage.html#nse-categories .
+
+       Scripts are not run in a sandbox and thus could accidentally or
+       maliciously damage your system or invade your privacy. Never run
+       scripts from third parties unless you trust the authors or have
+       carefully audited the scripts yourself.
+
+       The Nmap Scripting Engine is described in detail at
+       https://nmap.org/book/nse.html and is controlled by the following options:
+
+       -sC
+              Performs a script scan using the default set of scripts. It is
+              equivalent to --script=default. Some of the scripts in this
+              category are considered intrusive and should not be run
+              against a target network without permission.
+
+              Note that this shorthand option is ignored whenever at least
+              one --script is also specified.
+
+       --script filename|category|directory/|expression[,...]
+              Runs a script scan using the comma-separated list of
+              filenames, script categories, and directories. Each element in
+              the list may also be a Boolean expression describing a more
+              complex set of scripts. Each element is interpreted first as
+              an expression, then as a category, and finally as a file or
+              directory name.
+
+              There are two special features for advanced users only. One is
+              to prefix script names and expressions with + to force them to
+              run even if they normally wouldn't (e.g. the relevant service
+              wasn't detected on the target port). The other is that the
+              argument all may be used to specify every script in Nmap's
+              database. Be cautious with this because NSE contains dangerous
+              scripts such as exploits, brute force authentication crackers,
+              and denial of service attacks.
+
+              File and directory names may be relative or absolute. Absolute
+              names are used directly. Relative paths are looked for in the
+              scripts of each of the following places until found:
+              --datadir
+              $NMAPDIR
+              ~/.nmap (not searched on Windows)
+              APPDATA\nmap (only on Windows)
+              the directory containing the nmap executable
+              the directory containing the nmap executable, followed by
+              ../share/nmap (not searched on Windows)
+              NMAPDATADIR (not searched on Windows)
+              the current directory.
+
+              When a directory name ending in / is given, Nmap loads every
+              file in the directory whose name ends with .nse. All other
+              files are ignored and directories are not searched
+              recursively. When a filename is given, it does not have to
+              have the .nse extension; it will be added automatically if
+              necessary.  Nmap scripts are stored in a scripts subdirectory
+              of the Nmap data directory by default (see
+              https://nmap.org/book/data-files.html ).
+
+              For efficiency, scripts are indexed in a database stored in
+              scripts/script.db, which lists the category or categories in
+              which each script belongs.  When referring to scripts from
+              script.db by name, you can use a shell-style ‘*’ wildcard.
+
+              nmap --script "http-*": Loads all scripts whose name starts with 
+              http-, such as http-auth and http-open-proxy. The argument to --script
+              had to be in quotes to protect the wildcard from the shell.
+
+              More complicated script selection can be done using the and,
+              or, and not operators to build Boolean expressions. The
+              operators have the same precedence[11] as in Lua: not is the
+              highest, followed by and and then or. You can alter precedence
+              by using parentheses. Because expressions contain space
+              characters it is necessary to quote them.
+
+              nmap --script "not intrusive": Loads every script except for 
+              those in the intrusive category.
+
+              nmap --script "default or safe": This is functionally equivalent 
+              to nmap --script "default,safe". It loads all scripts that are in the
+              default category or the safe category or both.
+
+              nmap --script "default and safe": Loads those scripts that are 
+              in both the default and safe categories.
+
+              nmap --script "(default or safe or intrusive) and not http-*": Loads 
+              scripts in the default, safe, or intrusive categories, except 
+              for those whose names start with http-.
+
+       --script-args n1=v1,n2={n3=v3},n4={v4,v5}
+              Lets you provide arguments to NSE scripts. Arguments are a
+              comma-separated list of name=value pairs. Names and values may
+              be strings not containing whitespace or the characters ‘{’,
+              ‘}’, ‘=’, or ‘,’. To include one of these characters in a
+              string, enclose the string in single or double quotes. Within
+              a quoted string, ‘\’ escapes a quote. A backslash is only used
+              to escape quotation marks in this special case; in all other
+              cases a backslash is interpreted literally. Values may also be
+              tables enclosed in {}, just as in Lua. A table may contain
+              simple string values or more name-value pairs, including
+              nested tables. Many scripts qualify their arguments with the
+              script name, as in xmpp-info.server_name. You may use that
+              full qualified version to affect just the specified script, or
+              you may pass the unqualified version (server_name in this
+              case) to affect all scripts using that argument name. A script
+              will first check for its fully qualified argument name (the
+              name specified in its documentation) before it accepts an
+              unqualified argument name. A complex example of script
+              arguments is --script-args
+              'user=foo,pass=",{}=bar",whois={whodb=nofollow+ripe},xmpp-info.server_name=localhost'.
+              The online NSE Documentation Portal at
+              https://nmap.org/nsedoc/ lists the arguments that each script
+              accepts.
+
+       --script-args-file filename
+              Lets you load arguments to NSE scripts from a file. Any
+              arguments on the command line supersede ones in the file. The
+              file can be an absolute path, or a path relative to Nmap's
+              usual search path (NMAPDIR, etc.) Arguments can be
+              comma-separated or newline-separated, but otherwise follow the
+              same rules as for --script-args, without requiring special
+              quoting and escaping, since they are not parsed by the shell.
+
+       --script-help filename|category|directory|expression|all[,...]
+              Shows help about scripts. For each script matching the given
+              specification, Nmap prints the script name, its categories,
+              and its description. The specifications are the same as those
+              accepted by --script; so for example if you want help about
+              the ftp-anon script, you would run nmap --script-help
+              ftp-anon. In addition to getting help for individual scripts,
+              you can use this as a preview of what scripts will be run for
+              a specification, for example with nmap --script-help default.
+
+       --script-trace
+              This option does what --packet-trace does, just one ISO layer
+              higher. If this option is specified all incoming and outgoing
+              communication performed by a script is printed. The displayed
+              information includes the communication protocol, the source,
+              the target and the transmitted data. If more than 5% of all
+              transmitted data is not printable, then the trace output is in
+              a hex dump format. Specifying --packet-trace enables script
+              tracing too.
+
+       --script-updatedb
+              This option updates the script database found in
+              scripts/script.db which is used by Nmap to determine the
+              available default scripts and categories. It is only necessary
+              to update the database if you have added or removed NSE
+              scripts from the default scripts directory or if you have
+              changed the categories of any script. This option is generally
+              used by itself: nmap --script-updatedb.
 
 OUTPUT
        Any security tool is only as useful as the output it generates.
@@ -2556,108 +2852,6 @@ NMAP OUTPUT FORMATS
               filenames with a directory path, such as ~/nmaplogs/foocorp/
               on Unix or c:\hacking\sco on Windows.
 
-VERBOSITY AND DEBUGGING OPTIONS 
-       -v (Increase verbosity level), -vlevel (Set verbosity level)
-              Increases the verbosity level, causing Nmap to print more
-              information about the scan in progress. Open ports are shown
-              as they are found and completion time estimates are provided
-              when Nmap thinks a scan will take more than a few minutes. Use
-              it twice or more for even greater verbosity: -vv, or give a
-              verbosity level directly, for example -v3.
-
-              Most changes only affect interactive output, and some also
-              affect normal and script kiddie output. The other output types
-              are meant to be processed by machines, so Nmap can give
-              substantial detail by default in those formats without
-              fatiguing a human user. However, there are a few changes in
-              other modes where output size can be reduced substantially by
-              omitting some detail. For example, a comment line in the
-              grepable output that provides a list of all ports scanned is
-              only printed in verbose mode because it can be quite long.
-
-       -d (Increase debugging level), -dlevel (Set debugging level)
-              When even verbose mode doesn't provide sufficient data for
-              you, debugging is available to flood you with much more! As
-              with the verbosity option (-v), debugging is enabled with a
-              command-line flag (-d) and the debug level can be increased by
-              specifying it multiple times, as in -dd, or by setting a level
-              directly. For example, -d9 sets level nine. That is the
-              highest effective level and will produce thousands of lines
-              unless you run a very simple scan with very few ports and
-              targets.
-
-              Debugging output is useful when a bug is suspected in Nmap, or
-              if you are simply confused as to what Nmap is doing and why.
-              As this feature is mostly intended for developers, debug lines
-              aren't always self-explanatory. You may get something like:
-              Timeout vals: srtt: -1 rttvar: -1 to: 1000000 delta 14987 ==>
-              srtt: 14987 rttvar: 14987 to: 100000. If you don't understand
-              a line, your only recourses are to ignore it, look it up in
-              the source code, or request help from the development list
-              (nmap-dev).  Some lines are self explanatory, but the messages
-              become more obscure as the debug level is increased.
-
-       --reason
-              (Host and port state reasons)
-              Shows the reason each port is set to a specific state and the
-              reason each host is up or down. This option displays the type
-              of the packet that determined a port or hosts state. For
-              example, A RST packet from a closed port or an echo reply from
-              an alive host. The information Nmap can provide is determined
-              by the type of scan or ping. The SYN scan and SYN ping (-sS
-              and -PS) are very detailed, but the TCP connect scan (-sT) is
-              limited by the implementation of the connect system call. This
-              feature is automatically enabled by the debug option (-d) and
-              the results are stored in XML log files even if this option is
-              not specified.
-
-       --stats-every time
-              (Print periodic timing stats)
-              Periodically prints a timing status message after each
-              interval of time. The time is a specification of the kind
-              described in the section called “TIMING AND PERFORMANCE”; so
-              for example, use --stats-every 10s to get a status update
-              every 10 seconds. Updates are printed to interactive output
-              (the screen) and XML output.
-
-       --packet-trace
-              (Trace packets and data sent and received)
-              Causes Nmap to print a summary of every packet sent or
-              received. This is often used for debugging, but is also a
-              valuable way for new users to understand exactly what Nmap is
-              doing under the covers. To avoid printing thousands of lines,
-              you may want to specify a limited number of ports to scan,
-              such as -p20-30. If you only care about the goings on of the
-              version detection subsystem, use --version-trace instead. If
-              you only care about script tracing, specify --script-trace.
-              With --packet-trace, you get all of the above.
-
-       --open
-              (Show only open (or possibly open) ports)
-              Sometimes you only care about ports you can actually connect
-              to (open ones), and don't want results cluttered with closed,
-              filtered, and closed|filtered ports. Output customization is
-              normally done after the scan using tools such as grep, awk,
-              and Perl, but this feature was added due to overwhelming
-              requests. Specify --open to only see hosts with at least one
-              open, open|filtered, or unfiltered port, and only see ports in
-              those states. These three states are treated just as they
-              normally are, which means that open|filtered and unfiltered
-              may be condensed into counts if there are an overwhelming
-              number of them.
-
-              Beginning with Nmap 7.40, the --open option implies
-
-              --defeat-rst-ratelimit, because that option only affects
-              closed and filtered ports, which are hidden by --open.
-
-       --iflist
-              (List interfaces and routes)
-              Prints the interface list and system routes as detected by
-              Nmap and quits. This is useful for debugging routing problems
-              or device mischaracterization (such as Nmap treating a PPP
-              connection as ethernet).
-
 MISCELLANEOUS OUTPUT OPTIONS
        --append-output
               (Append to rather than clobber output files)
@@ -2731,155 +2925,7 @@ MISCELLANEOUS OUTPUT OPTIONS
               stylesheet with its XML output. The xml-stylesheet directive
               is omitted.
 
-MISCELLANEOUS OPTIONS
-       This section describes some important (and not-so-important)
-       options that don't really fit anywhere else.
-
-       -6
-              (Enable IPv6 scanning)
-              Nmap has IPv6 support for its most popular features. Ping
-              scanning, port scanning, version detection, and the Nmap
-              Scripting Engine all support IPv6. The command syntax is the
-              same as usual except that you also add the -6 option. Of
-              course, you must use IPv6 syntax if you specify an address
-              rather than a hostname. An address might look like
-              3ffe:7501:4819:2000:210:f3ff:fe03:14d0, so hostnames are
-              recommended. The output looks the same as usual, with the IPv6
-              address on the “interesting ports” line being the only IPv6
-              giveaway.
-
-              While IPv6 hasn't exactly taken the world by storm, it gets
-              significant use in some (usually Asian) countries and most
-              modern operating systems support it. To use Nmap with IPv6,
-              both the source and target of your scan must be configured for
-              IPv6. If your ISP (like most of them) does not allocate IPv6
-              addresses to you, free tunnel brokers are widely available and
-              work fine with Nmap. I use the free IPv6 tunnel broker service
-              at http://www.tunnelbroker.net . Other tunnel brokers are
-              listed at Wikipedia[17]. 6to4 tunnels are another popular,
-              free approach.
-
-              On Windows, raw-socket IPv6 scans are supported only on
-              ethernet devices (not tunnels), and only on Windows Vista and
-              later. Use the --unprivileged option in other situations.
-
-       -A
-              (Aggressive scan options)
-              This option enables additional advanced and aggressive
-              options. Presently this enables OS detection (-O), version
-              scanning (-sV), script scanning (-sC) and traceroute
-              (--traceroute).  More features may be added in the future. The
-              point is to enable a comprehensive set of scan options without
-              people having to remember a large set of flags. However,
-              because script scanning with the default set is considered
-              intrusive, you should not use -A against target networks
-              without permission. This option only enables features, and not
-              timing options (such as -T4) or verbosity options (-v) that
-              you might want as well. Options which require privileges (e.g.
-              root access) such as OS detection and traceroute will only be
-              enabled if those privileges are available.
-
-       --datadir directoryname
-              (Specify custom Nmap data file location)
-              Nmap obtains some special data at runtime in files named
-              nmap-service-probes, nmap-services, nmap-protocols, nmap-rpc,
-              nmap-mac-prefixes, and nmap-os-db. If the location of any of
-              these files has been specified (using the --servicedb or
-              --versiondb options), that location is used for that file.
-              After that, Nmap searches these files in the directory
-              specified with the --datadir option (if any). Any files not
-              found there, are searched for in the directory specified by
-              the NMAPDIR environment variable. Next comes ~/.nmap for real
-              and effective UIDs; or on Windows, HOME\AppData\Roaming\nmap
-              (where HOME is the user's home directory, like C:\Users\user).
-              This is followed by the location of the nmap executable and
-              the same location with ../share/nmap appended. Then a
-              compiled-in location such as /usr/local/share/nmap or
-              /usr/share/nmap.
-
-       --servicedb services file
-              (Specify custom services file)
-              Asks Nmap to use the specified services file rather than the
-              nmap-services data file that comes with Nmap. Using this
-              option also causes a fast scan (-F) to be used. See the
-              description for --datadir for more information on Nmap's data
-              files.
-
-       --versiondb service probes file 
-              (Specify custom service probes file)
-              Asks Nmap to use the specified service probes file rather than
-              the nmap-service-probes data file that comes with Nmap. See
-              the description for --datadir for more information on Nmap's
-              data files.
-
-       --send-eth
-              (Use raw ethernet sending)
-              Asks Nmap to send packets at the raw ethernet (data link)
-              layer rather than the higher IP (network) layer. By default,
-              Nmap chooses the one which is generally best for the platform
-              it is running on. Raw sockets (IP layer) are generally most
-              efficient for Unix machines, while ethernet frames are
-              required for Windows operation since Microsoft disabled raw
-              socket support. Nmap still uses raw IP packets on Unix despite
-              this option when there is no other choice (such as
-              non-ethernet connections).
-
-       --send-ip
-              (Send at raw IP level)
-              Asks Nmap to send packets via raw IP sockets rather than
-              sending lower level ethernet frames. It is the complement to
-              the --send-eth option discussed previously.
-
-       --privileged
-              (Assume that the user is fully privileged)
-              Tells Nmap to simply assume that it is privileged enough to
-              perform raw socket sends, packet sniffing, and similar
-              operations that usually require root privileges on Unix
-              systems. By default Nmap quits if such operations are
-              requested but geteuid is not zero.  --privileged is useful
-              with Linux kernel capabilities and similar systems that may be
-              configured to allow unprivileged users to perform raw-packet
-              scans. Be sure to provide this option flag before any flags
-              for options that require privileges (SYN scan, OS detection,
-              etc.). The NMAP_PRIVILEGED environment variable may be set as
-              an equivalent alternative to --privileged.
-
-       --unprivileged
-              (Assume that the user lacks raw socket privileges)
-              This option is the opposite of --privileged. It tells Nmap to
-              treat the user as lacking network raw socket and sniffing
-              privileges. This is useful for testing, debugging, or when the
-              raw network functionality of your operating system is somehow
-              broken. The NMAP_UNPRIVILEGED environment variable may be set
-              as an equivalent alternative to --unprivileged.
-
-       --release-memory
-              (Release memory before quitting)
-              This option is only useful for memory-leak debugging. It
-              causes Nmap to release allocated memory just before it quits
-              so that actual memory leaks are easier to spot. Normally Nmap
-              skips this as the OS does this anyway upon process
-              termination.
-
-       -V; --version
-              (Print version number)
-              Prints the Nmap version number and exits.
-
-       -h; --help
-              (Print help summary page)
-              Prints a short help screen with the most common command flags.
-              Running Nmap without any arguments does the same thing.
-
 EXAMPLES
-       Here are some Nmap usage examples, from the simple and routine to
-       a little more complex and esoteric. Some actual IP addresses and
-       domain names are used to make things more concrete. In their place
-       you should substitute addresses/names from your own network. While
-       I don't think port scanning other networks is or should be
-       illegal, some network administrators don't appreciate unsolicited
-       scanning of their networks and may complain. Getting permission
-       first is the best approach.
-
        For testing purposes, you have permission to scan the host
        scanme.nmap.org.  This permission only includes scanning via Nmap
        and not testing exploits or denial of service attacks. To conserve
@@ -2889,21 +2935,18 @@ EXAMPLES
        hostname/IP: scanme.nmap.org. These permissions also apply to the
        hosts scanme2.nmap.org, scanme3.nmap.org, and so on, though those
        hosts do not currently exist.
-
-       nmap -v scanme.nmap.org
+              nmap -v scanme.nmap.org
 
        This option scans all reserved TCP ports on the machine
        scanme.nmap.org . The -v option enables verbose mode.
-
-       nmap -sS -O scanme.nmap.org/24
+              nmap -sS -O scanme.nmap.org/24
 
        Launches a stealth SYN scan against each machine that is up out of
        the 256 IPs on the /24 sized network where Scanme resides. It also
        tries to determine what operating system is running on each host
        that is up and running. This requires root privileges because of
        the SYN scan and OS detection.
-
-       nmap -sV -p 22,53,110,143,4564 198.116.0-255.1-127
+              nmap -sV -p 22,53,110,143,4564 198.116.0-255.1-127
 
        Launches host enumeration and a TCP scan at the first half of each
        of the 255 possible eight-bit subnets in the 198.116.0.0/16
@@ -2911,17 +2954,12 @@ EXAMPLES
        or IMAP on their standard ports, or anything on port 4564. For any
        of these ports found open, version detection is used to determine
        what application is running.
-
-       nmap -v -iR 100000 -Pn -p 80
+              nmap -v -iR 100000 -Pn -p 80
 
        Asks Nmap to choose 100,000 hosts at random and scan them for web
        servers (port 80). Host enumeration is disabled with -Pn since
        first sending a couple probes to determine whether a host is up is
        wasteful when you are only probing one port on each target host
        anyway.
-
-       nmap -Pn -p80 -oX logs/pb-port80scan.xml -oG
-       logs/pb-port80scan.gnmap 216.163.128.20/20
-
-       This scans 4096 IPs for any web servers (without pinging them) and
-       saves the output in grepable and XML formats.
+              nmap -Pn -p80 -oX logs/pb-port80scan.xml -oG
+              logs/pb-port80scan.gnmap 216.163.128.20/20

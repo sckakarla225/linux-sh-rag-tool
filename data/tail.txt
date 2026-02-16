@@ -11,6 +11,7 @@ DESCRIPTION
        Mandatory arguments to long options are mandatory for short
        options too.
 
+OPTIONS
        -c, --bytes=[+]NUM
               output the last NUM bytes; or use -c +NUM to output
               starting with byte NUM of each file

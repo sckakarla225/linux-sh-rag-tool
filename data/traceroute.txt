@@ -398,7 +398,8 @@ LIST OF AVAILABLE METHODS
               most can easily be confused by them. Most cases it will not
               respond to our packets though, so we will never see the final hop
               in the trace. (Fortunately, it seems that at least dns servers
-              replies with something angry). This method is allowed for unprivileged users.
+              replies with something angry). This method is allowed for 
+              unprivileged users.
 
        udplite -UL
               Use udplite datagram for probes (with constant destination port,

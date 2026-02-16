@@ -10,6 +10,17 @@ DESCRIPTION
        Mandatory arguments to long options are mandatory for short
        options too.
 
+OPTIONS
+       Use one, and only one of -b, -c or -f.  Each LIST is made up of
+       one range, or many ranges separated by commas.  Selected input is
+       written in the same order that it is read, and is written exactly
+       once.  Each range is one of:
+
+       N: N'th byte, character or field, counted from 1
+       N-: from N'th byte, character or field, to end of line
+       N-M: from N'th to M'th (included) byte, character or field
+       -M: from first to M'th (included) byte, character or field
+
        -b, --bytes=LIST
               select only these bytes
 
@@ -42,16 +53,3 @@ DESCRIPTION
 
        --version
               output version information and exit
-       
-       Use one, and only one of -b, -c or -f.  Each LIST is made up of
-       one range, or many ranges separated by commas.  Selected input is
-       written in the same order that it is read, and is written exactly
-       once.  Each range is one of:
-
-       N - N'th byte, character or field, counted from 1
-
-       N- - from N'th byte, character or field, to end of line
-
-       N-M - from N'th to M'th (included) byte, character or field
-
-       -M - from first to M'th (included) byte, character or field

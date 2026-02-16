@@ -14,6 +14,7 @@ DESCRIPTION
        always in the following order: newline, word, character, byte,
        maximum line length.
 
+OPTIONS
        -c, --bytes
               print the byte counts
 

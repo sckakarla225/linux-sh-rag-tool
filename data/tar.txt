@@ -2,28 +2,25 @@ NAME
        tar - an archiving utility
 
 SYNOPSIS
-       Traditional usage
-              tar {A|c|d|r|t|u|x}[GnSkUWOmpsMBiajJzZhPlRvwo] [ARG...]
+       tar {A|c|d|r|t|u|x}[GnSkUWOmpsMBiajJzZhPlRvwo] [ARG...]
        
-       UNIX-style usage
-              tar -A [OPTIONS] -f ARCHIVE ARCHIVE...
-              tar -c [-f ARCHIVE] [OPTIONS] [FILE...]
-              tar -d [-f ARCHIVE] [OPTIONS] [FILE...]
-              tar -r [-f ARCHIVE] [OPTIONS] [FILE...]
-              tar -t [-f ARCHIVE] [OPTIONS] [MEMBER...]
-              tar -u [-f ARCHIVE] [OPTIONS] [FILE...]
-              tar -x [-f ARCHIVE] [OPTIONS] [MEMBER...]
+       tar -A [OPTIONS] -f ARCHIVE ARCHIVE...
+       tar -c [-f ARCHIVE] [OPTIONS] [FILE...]
+       tar -d [-f ARCHIVE] [OPTIONS] [FILE...]
+       tar -r [-f ARCHIVE] [OPTIONS] [FILE...]
+       tar -t [-f ARCHIVE] [OPTIONS] [MEMBER...]
+       tar -u [-f ARCHIVE] [OPTIONS] [FILE...]
+       tar -x [-f ARCHIVE] [OPTIONS] [MEMBER...]
        
-       GNU-style usage
-              tar {--catenate|--concatenate} [OPTIONS] --file ARCHIVE ARCHIVE...
-              tar --create [--file ARCHIVE] [OPTIONS] [FILE...]
-              tar {--diff|--compare} [--file ARCHIVE] [OPTIONS] [FILE...]
-              tar --delete [--file ARCHIVE] [OPTIONS] [MEMBER...]
-              tar --append [--file ARCHIVE] [OPTIONS] [FILE...]
-              tar --list [--file ARCHIVE] [OPTIONS] [MEMBER...]
-              tar --test-label [--file ARCHIVE] [OPTIONS] [LABEL...]
-              tar --update [--file ARCHIVE] [OPTIONS] [FILE...]
-              tar {--extract|--get} [--file ARCHIVE] [OPTIONS] [MEMBER...]
+       tar {--catenate|--concatenate} [OPTIONS] --file ARCHIVE ARCHIVE...
+       tar --create [--file ARCHIVE] [OPTIONS] [FILE...]
+       tar {--diff|--compare} [--file ARCHIVE] [OPTIONS] [FILE...]
+       tar --delete [--file ARCHIVE] [OPTIONS] [MEMBER...]
+       tar --append [--file ARCHIVE] [OPTIONS] [FILE...]
+       tar --list [--file ARCHIVE] [OPTIONS] [MEMBER...]
+       tar --test-label [--file ARCHIVE] [OPTIONS] [LABEL...]
+       tar --update [--file ARCHIVE] [OPTIONS] [FILE...]
+       tar {--extract|--get} [--file ARCHIVE] [OPTIONS] [MEMBER...]
 
 DESCRIPTION
        GNU tar is an archiving program designed to store multiple files
@@ -66,9 +63,7 @@ DESCRIPTION
        The example command above written in the short-option style could
        look like:
 
-       tar -cvf etc.tar /etc
-       or
-       tar -c -v -f etc.tar /etc
+       tar -cvf etc.tar /etc or tar -c -v -f etc.tar /etc
 
        In GNU or long-option style, each option begins with two dashes
        and has a meaningful name, consisting of lower-case letters and
@@ -313,77 +308,53 @@ OUTPUT STREAM SELECTION
               standard input.  Additional data will be supplied via the
               following environment variables:
 
-              TAR_FILETYPE
-                     Type of the file. It is a single letter with the
-                     following meaning:
-                     f - Regular file
-                     d - Directory
-                     l - Symbolic link
-                     h - Hard link
-                     b - Block device
-                     c - Character device
-                     Currently only regular files are supported.
+              TAR_FILETYPE: Type of the file. It is a single letter 
+              with thefollowing meaning: f - Regular file; d - Directory; 
+              l - Symbolic link h - Hard link; b - Block device; 
+              c - Character device. Currently only regular files are supported.
 
-              TAR_MODE
-                     File mode, an octal number.
+              TAR_MODE: File mode, an octal number.
 
-              TAR_FILENAME
-                     The name of the file.
+              TAR_FILENAME: The name of the file.
 
-              TAR_REALNAME
-                     Name of the file as stored in the archive.
+              TAR_REALNAME: Name of the file as stored in the archive.
 
-              TAR_UNAME
-                     Name of the file owner.
+              TAR_UNAME: Name of the file owner.
 
-              TAR_GNAME
-                     Name of the file owner group.
+              TAR_GNAME: Name of the file owner group.
 
-              TAR_ATIME
-                     Time of last access. It is a decimal number,
-                     representing seconds since the Epoch.  If the
-                     archive provides times with nanosecond precision,
-                     the nanoseconds are appended to the timestamp after
-                     a decimal point.
+              TAR_ATIME: Time of last access. It is a decimal number, 
+              representing seconds since the Epoch.  If the archive provides 
+              times with nanosecond precision, the nanoseconds are appended 
+              to the timestamp after a decimal point.
 
-              TAR_MTIME
-                     Time of last modification.
+              TAR_MTIME: Time of last modification.
 
-              TAR_CTIME
-                     Time of last status change.
+              TAR_CTIME: Time of last status change.
 
-              TAR_SIZE
-                     Size of the file.
+              TAR_SIZE: Size of the file.
 
-              TAR_UID
-                     UID of the file owner.
+              TAR_UID: UID of the file owner.
 
-              TAR_GID
-                     GID of the file owner.
-                     Additionally, the following variables contain information
-                     about tar operation mode and the archive being processed:
+              TAR_GID: GID of the file owner. Additionally, the following 
+              variables contain information about tar operation mode and the 
+              archive being processed.
 
-              TAR_VERSION
-                     GNU tar version number.
+              TAR_VERSION: GNU tar version number.
 
-              TAR_ARCHIVE
-                     The name of the archive tar is processing.
+              TAR_ARCHIVE: The name of the archive tar is processing.
 
-              TAR_BLOCKING_FACTOR
-                     Current blocking factor, i.e., number of 512-byte
-                     blocks in a record.
+              TAR_BLOCKING_FACTOR: Current blocking factor, i.e.,
+              number of 512-byte blocks in a record.
 
-              TAR_VOLUME
-                     Ordinal number of the volume tar is processing (set
-                     if reading a multi-volume archive).
+              TAR_VOLUME: Ordinal number of the volume tar is
+              processing (set if reading a multi-volume archive).
 
-              TAR_FORMAT
-                     Format of the archive being processed.  One of: gnu,
-                     oldgnu, posix, ustar, v7.
+              TAR_FORMAT: Format of the archive being processed.
+              One of: gnu, oldgnu, posix, ustar, v7.
 
-              TAR_SUBCOMMAND
-                     A short option (with a leading dash) describing the
-                     operation tar is executing.
+              TAR_SUBCOMMAND A short option (with a leading dash) 
+              describing the operation tar is executing.
 
 HANDLING OF FILE ATTRIBUTES
        --atime-preserve[=METHOD]
@@ -505,7 +476,8 @@ HANDLING OF FILE ATTRIBUTES
               the underlying system provides the necessary information.
 
 EXTENDED FILE ATTRIBUTES
-       --acls Enable POSIX ACLs support.
+       --acls
+              Enable POSIX ACLs support.
 
        --no-acls
               Disable POSIX ACLs support.
@@ -570,36 +542,30 @@ DEVICE SELECTION AND SWITCHING
               command can include arguments.  When started, it will
               inherit tar's environment plus the following variables:
 
-              TAR_VERSION
-                     GNU tar version number.
+              TAR_VERSION - GNU tar version number.
 
-              TAR_ARCHIVE
-                     The name of the archive tar is processing.
+              TAR_ARCHIVE - The name of the archive tar is processing.
 
-              TAR_BLOCKING_FACTOR
-                     Current blocking factor, i.e., number of 512-byte
-                     blocks in a record.
+              TAR_BLOCKING_FACTOR - Current blocking factor, i.e., 
+              number of 512-byte blocks in a record.
 
-              TAR_VOLUME
-                     Ordinal number of the volume tar is processing (set
-                     if reading a multi-volume archive).
+              TAR_VOLUME - Ordinal number of the volume tar is 
+              processing (set if reading a multi-volume archive).
 
-              TAR_FORMAT
-                     Format of the archive being processed.  One of: gnu,
-                     oldgnu, posix, ustar, v7.
+              TAR_FORMAT - Format of the archive being processed.
+              One of: gnu, oldgnu, posix, ustar, v7.
 
-              TAR_SUBCOMMAND
-                     A short option (with a leading dash) describing the
-                     operation tar is executing.
+              TAR_SUBCOMMAND - A short option (with a leading dash) 
+              describing the operation tar is executing.
 
-              TAR_FD File descriptor which can be used to communicate the
-                     new volume name to tar.
+              TAR_FD - File descriptor which can be used to communicate 
+              the new volume name to tar.
 
               If the info script fails, tar exits; otherwise, it begins
               writing the next volume.
 
        -L, --tape-length=N
-              Change tape after writing Nx1024 bytes.  If N is followed
+              Change tape after writing Nx1024 bytes. If N is followed
               by a size suffix (see the subsection Size suffixes below),
               the suffix specifies the multiplicative factor to be used
               instead of 1024. This option implies -M.
@@ -704,12 +670,13 @@ COMPRESSION OPTIONS
 
 LOCAL FILE SELECTION
        --add-file=FILE
-              Add FILE to the archive (useful if its name starts with a
-              dash).
+              Add FILE to the archive (useful if its name 
+              starts with a dash).
 
        --backup[=CONTROL]
-              Backup before removal.  The CONTROL argument, if supplied,
-              controls the backup policy.  Its valid values are:
+              Backup before removal.  The CONTROL argument, 
+              if supplied, controls the backup policy.  
+              Its valid values are:
 
               none, off - Never make backups.
               t, numbered - Make numbered backups.
@@ -816,7 +783,8 @@ LOCAL FILE SELECTION
 
               It is implied by the --no-null option.
 
-       --null Instruct subsequent -T options to read null-terminated
+       --null
+              Instruct subsequent -T options to read null-terminated
               names verbatim (disables special handling of names that
               start with a dash).
 
@@ -831,8 +799,8 @@ LOCAL FILE SELECTION
               Stay in local file system when creating archive.
 
        -P, --absolute-names
-              Don't strip leading slashes from file names when creating
-              archives.
+              Don't strip leading slashes from file names 
+              when creating archives.
 
        --recursion
               Recurse into directories (default).
@@ -984,109 +952,78 @@ INFORMATIVE OUTPUT
 
               Keywords controlling general tar operation:
 
-              all
-                     Enable all warning messages. This is the default.
-              none
-                     Disable all warning messages.
-
-              filename-with-nuls
-                     "%s: file name read contains nul character"
-
-              alone-zero-block
-                     "A lone zero block at %s"
-
+              all - Enable all warning messages. This is the default.
+              
+              none - Disable all warning messages.
+             
+              filename-with-nuls - "%s: file name read contains nul character"
+              
+              alone-zero-block - "A lone zero block at %s"
+              
               Keywords applicable for tar --create:
 
-              cachedir
-                     "%s: contains a cache directory tag %s; %s"
-
-              file-shrank
-                     "%s: File shrank by %s bytes; padding with zeros"
-
-              xdev
-                     "%s: file is on a different filesystem; not dumped"
-
-              file-ignored
-                     "%s: Unknown file type; file ignored"
-                     "%s: socket ignored"
-                     "%s: door ignored"
-
-              file-unchanged
-                     "%s: file is unchanged; not dumped"
-
-              ignore-archive
-                     "%s: archive cannot contain itself; not dumped"
-
-              file-removed
-                     "%s: File removed before we read it"
-
-              file-changed
-                     "%s: file changed as we read it"
-
-              failed-read
-                     Suppresses warnings about unreadable files or
-                     directories. This keyword applies only if used
-                     together with the --ignore-failed-read option.
+              cachedir - "%s: contains a cache directory tag %s; %s"
+              
+              file-shrank - "%s: File shrank by %s bytes; padding with zeros"
+              
+              xdev - "%s: file is on a different filesystem; not dumped"
+              
+              file-ignored - "%s: Unknown file type; file ignored";
+              "%s: socket ignored"; "%s: door ignored"
+              
+              file-unchanged - "%s: file is unchanged; not dumped"
+              
+              ignore-archive - "%s: archive cannot contain itself; not dumped"
+              
+              file-removed - "%s: File removed before we read it"
+              
+              file-changed - "%s: file changed as we read it"
+              
+              failed-read - Suppresses warnings about unreadable files 
+              or directories. This keyword applies only if used
+              together with the --ignore-failed-read option.
 
               Keywords applicable for tar --extract:
 
-              existing-file
-                     "%s: skipping existing file"
+              existing-file - "%s: skipping existing file"
 
-              timestamp
-                     "%s: implausibly old time stamp %s"
-                     "%s: time stamp %s is %s s in the future"
+              timestamp - "%s: implausibly old time stamp %s";
+              "%s: time stamp %s is %s s in the future"
+              
+              contiguous-cast - "Extracting contiguous files as regular files"
+              
+              symlink-cast - "Attempting extraction of symbolic links as hard links"
 
-              contiguous-cast
-                     "Extracting contiguous files as regular files"
+              unknown-cast - "%s: Unknown file type '%c', extracted as normal file"
 
-              symlink-cast
-                     "Attempting extraction of symbolic links as hard
-                     links"
+              ignore-newer - "Current %s is newer or same age"
 
-              unknown-cast
-                     "%s: Unknown file type '%c', extracted as normal
-                     file"
+              unknown-keyword - "Ignoring unknown extended header keyword '%s'"
 
-              ignore-newer
-                     "Current %s is newer or same age"
+              decompress-program - Controls verbose description of failures 
+              occurring when trying to run alternative decompressor
+              programs.  This warning is disabled by default
+              (unless --verbose is used).  A common example of
+              what you can get when using this warning is:
+              $ tar --warning=decompress-program -x -f archive.Z
+              tar (child): cannot run compress: No such file or directory
+              tar (child): trying gzip
+              This means that tar first tried to decompress
+              archive.Z using compress, and, when that failed,
+              switched to gzip.
 
-              unknown-keyword
-                     "Ignoring unknown extended header keyword '%s'"
-
-              decompress-program
-                     Controls verbose description of failures occurring
-                     when trying to run alternative decompressor
-                     programs.  This warning is disabled by default
-                     (unless --verbose is used).  A common example of
-                     what you can get when using this warning is:
-
-                     $ tar --warning=decompress-program -x -f archive.Z
-                     tar (child): cannot run compress: No such file or directory
-                     tar (child): trying gzip
-
-                     This means that tar first tried to decompress
-                     archive.Z using compress, and, when that failed,
-                     switched to gzip.
-
-              record-size
-                     "Record size = %lu blocks"
+              record-size - "Record size = %lu blocks"
 
               Keywords controlling incremental extraction:
 
-              rename-directory
-                     "%s: Directory has been renamed from %s"
-                     "%s: Directory has been renamed"
+              rename-directory - "%s: Directory has been renamed from %s"
+              "%s: Directory has been renamed"
 
-              new-directory
-                     "%s: Directory is new"
+              new-directory - "%s: Directory is new"
 
-              xdev
-                     "%s: directory is on a different device: not
-                     purging"
+              xdev - "%s: directory is on a different device: not purging"
 
-              bad-dumpdir
-                     "Malformed dumpdir: 'X' never used"
+              bad-dumpdir - "Malformed dumpdir: 'X' never used"
 
        -w, --interactive, --confirmation
               Ask for confirmation for every action.
@@ -1097,13 +1034,13 @@ COMPATIBILITY OPTIONS
               same as --no-same-owner.
 
 SIZE SUFFIXES
-       b - Blocks - SIZE x 512
-       B - Kilobytes - SIZE x 1024
-       c - Bytes - SIZE
-       G - Gigabytes - SIZE x 1024^3
-       K - Kilobytes - SIZE x 1024
-       k - Kilobytes - SIZE x 1024
-       M - Megabytes - SIZE x 1024^2
-       P - Petabytes - SIZE x 1024^5
-       T - Terabytes - SIZE x 1024^4
-       w - Words - SIZE x 2
+       b: Blocks - SIZE x 512
+       B: Kilobytes - SIZE x 1024
+       c: Bytes - SIZE
+       G: Gigabytes - SIZE x 1024^3
+       K: Kilobytes - SIZE x 1024
+       k: Kilobytes - SIZE x 1024
+       M: Megabytes - SIZE x 1024^2
+       P: Petabytes - SIZE x 1024^5
+       T: Terabytes - SIZE x 1024^4
+       w: Words - SIZE x 2

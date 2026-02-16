@@ -82,9 +82,7 @@ OPTIONS
        -n, -netns <NETNS>
               switches ip to the specified network namespace NETNS.
               Actually it just simplifies executing of:
-
-              ip netns exec NETNS ip [ OPTIONS ] OBJECT { COMMAND | help }
-              to
+              ip netns exec NETNS ip [ OPTIONS ] OBJECT { COMMAND | help } to
               ip -n[etns] NETNS [ OPTIONS ] OBJECT { COMMAND | help }
        
        -N, -Numeric
@@ -102,9 +100,7 @@ OPTIONS
               before enabling color output. If parameter is never, color
               output is disabled. If specified multiple times, the last
               one takes precedence. This flag is ignored if -json is also
-              given.
-
-              Used color palette can be influenced by COLORFGBG
+              given. Used color palette can be influenced by COLORFGBG
               environment variable (see ENVIRONMENT).
        
        -t, -timestamp
@@ -137,34 +133,34 @@ OPTIONS
 
 IP-COMMAND SYNTAX
        OBJECT
-              address - protocol (IP or IPv6) address on a device.
-              addrlabel - label configuration for protocol address selection.
-              fou - Foo-over-UDP receive port configuration.
-              ila - manage identifier locator addresses (ILA).
-              ioam - manage IOAM namespaces and IOAM schemas.
-              l2tp - tunnel ethernet over IP (L2TPv3).
-              link - network device.
-              macsec - MACsec device configuration.
-              maddress - multicast address.
-              monitor - watch for netlink messages.
-              mptcp  - manage MPTCP path manager.
-              mroute - multicast routing cache entry.
-              mrule  - rule in multicast routing policy database.
-              neighbour - manage ARP or NDISC cache entries.
-              netconf - network configuration monitoring.
-              netns  - manage network namespaces.
-              nexthop - manage nexthop objects.
-              ntable - manage the neighbor cache's operation.
-              route  - routing table entry.
-              rule   - rule in routing policy database.
-              sr     - manage IPv6 segment routing.
-              stats  - manage and show interface statistics.
-              tcp_metrics/tcpmetrics - manage TCP Metrics.
-              token  - manage tokenized interface identifiers.
-              tunnel - tunnel over IP.
-              tuntap - manage TUN/TAP devices.
-              vrf    - manage virtual routing and forwarding devices.
-              xfrm   - manage IPSec policies.
+              address: protocol (IP or IPv6) address on a device.
+              addrlabel: label configuration for protocol address selection.
+              fou: Foo-over-UDP receive port configuration.
+              ila: manage identifier locator addresses (ILA).
+              ioam: manage IOAM namespaces and IOAM schemas.
+              l2tp: tunnel ethernet over IP (L2TPv3).
+              link: network device.
+              macsec: MACsec device configuration.
+              maddress: multicast address.
+              monitor: watch for netlink messages.
+              mptcp: manage MPTCP path manager.
+              mroute: multicast routing cache entry.
+              mrule: rule in multicast routing policy database.
+              neighbour: manage ARP or NDISC cache entries.
+              netconf: network configuration monitoring.
+              netns: manage network namespaces.
+              nexthop: manage nexthop objects.
+              ntable: manage the neighbor cache's operation.
+              route: routing table entry.
+              rule: rule in routing policy database.
+              sr: manage IPv6 segment routing.
+              stats: manage and show interface statistics.
+              tcp_metrics/tcpmetrics: manage TCP Metrics.
+              token: manage tokenized interface identifiers.
+              tunnel: tunnel over IP.
+              tuntap: manage TUN/TAP devices.
+              vrf: manage virtual routing and forwarding devices.
+              xfrm: manage IPSec policies.
 
               The names of all objects may be written in full or abbreviated
               form, for example address can be abbreviated as addr or just a.
@@ -176,11 +172,9 @@ IP-COMMAND SYNTAX
               objects do not allow all of these operations or have some
               additional commands. The help command is available for all
               objects. It prints out a list of available commands and argument
-              syntax conventions.
-
-              If no command is given, some default command is assumed.  Usually
-              it is list or, if the objects of this class cannot be listed,
-              help.
+              syntax conventions. If no command is given, some default 
+              command is assumed.  Usually it is list or, if the objects of 
+              this class cannot be listed, help.
 
 ENVIRONMENT
        COLORFGBG
@@ -195,17 +189,17 @@ ENVIRONMENT
               COLORFGBG=";0" ip -c a
 
 EXAMPLES
-       ip addr
-              Shows addresses assigned to all network interfaces.
+       Shows addresses assigned to all network interfaces.
+              ip addr
        
-       ip neigh
-              Shows the current neighbour table in kernel.
+       Shows the current neighbour table in kernel.
+              ip neigh
        
-       ip link set x up
-              Bring up interface x.
+       Bring up interface x.
+              ip link set x up
     
-       ip link set x down
-              Bring down interface x.
-    
-       ip route
-              Show table routes.
+       Bring down interface x.
+              ip link set x down
+       
+       Show table routes.
+              ip route      

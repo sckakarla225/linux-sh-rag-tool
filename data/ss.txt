@@ -53,83 +53,65 @@ OPTIONS
 
               timer:(<timer_name>,<expire_time>,<retrans>)
 
-              <timer_name>
-                     the name of the timer, there are five kind of timer
-                     names:
+              <timer_name>: the name of the timer, there are five kind 
+              of timer names:
+              1. on : means one of these timers: TCP retrans timer,
+              TCP early retrans timer and tail loss probe timer
+              2. keepalive: tcp keep alive timer
+              3. timewait: timewait stage timer
+              4. persist: zero window probe timer
+              5. unknown: none of the above timers
 
-                     1. on : means one of these timers: TCP retrans timer,
-                     TCP early retrans timer and tail loss probe timer
-                     2. keepalive: tcp keep alive timer
-                     3. timewait: timewait stage timer
-                     4. persist: zero window probe timer
-                     5. unknown: none of the above timers
+              <expire_time>: how long time the timer will expire
 
-              <expire_time>
-                     how long time the timer will expire
-
-              <retrans>
-                     how many times the retransmission occurred
+              <retrans>: how many times the retransmission occurred
 
        -e, --extended
               Show detailed socket information. The output format is:
 
               uid:<uid_number> ino:<inode_number> sk:<cookie>
 
-              <uid_number>
-                     the user id the socket belongs to
+              <uid_number>: the user id the socket belongs to
 
-              <inode_number>
-                     the socket's inode number in VFS
+              <inode_number>: the socket's inode number in VFS
 
-              <cookie>
-                     an uuid of the socket
+              <cookie>: an uuid of the socket
 
        -m, --memory
               Show socket memory usage. The output format is:
 
               skmem:(r<rmem_alloc>,rb<rcv_buf>,t<wmem_alloc>,tb<snd_buf>,
-                            f<fwd_alloc>,w<wmem_queued>,o<opt_mem>,
-                            bl<back_log>,d<sock_drop>)
+              f<fwd_alloc>,w<wmem_queued>,o<opt_mem>, bl<back_log>,d<sock_drop>)
 
-              <rmem_alloc>
-                     the memory allocated for receiving packet
+              <rmem_alloc>: the memory allocated for receiving packet
 
-              <rcv_buf>
-                     the total memory can be allocated for receiving
-                     packet
+              <rcv_buf>: the total memory can be allocated for receiving packet
 
-              <wmem_alloc>
-                     the memory used for sending packet (which has been
-                     sent to layer 3)
+              <wmem_alloc>: the memory used for sending packet (which 
+              has been sent to layer 3)
 
-              <snd_buf>
-                     the total memory can be allocated for sending packet
+              <snd_buf>: the total memory can be allocated for sending packet
 
-              <fwd_alloc>
-                     the memory allocated by the socket as cache, but not
-                     used for receiving/sending packet yet. If need
-                     memory to send/receive packet, the memory in this
-                     cache will be used before allocate additional
-                     memory.
+              <fwd_alloc>: the memory allocated by the socket as cache, 
+              but not used for receiving/sending packet yet. If need
+              memory to send/receive packet, the memory in this
+              cache will be used before allocate additional
+              memory.
 
-              <wmem_queued>
-                     The memory allocated for sending packet (which has
-                     not been sent to layer 3)
+              <wmem_queued>: The memory allocated for sending packet (which
+              has not been sent to layer 3)
 
-              <opt_mem>
-                     The memory used for storing socket option, e.g., the
-                     key for TCP MD5 signature
+              <opt_mem>: The memory used for storing socket option, e.g., the
+              key for TCP MD5 signature
 
-              <back_log>
-                     The memory used for the sk backlog queue. On a
-                     process context, if the process is receiving packet,
-                     and a new packet is received, it will be put into
-                     the sk backlog queue, so it can be received by the
-                     process immediately
+              <back_log>: The memory used for the sk backlog queue. 
+              On a process context, if the process is receiving packet,
+              and a new packet is received, it will be put into
+              the sk backlog queue, so it can be received by the
+              process immediately
 
-              <sock_drop>
-                     the number of packets dropped before they are de-
-                     multiplexed into the socket
+              <sock_drop>: the number of packets dropped before they are de-
+              multiplexed into the socket
 
        -p, --processes
               Show process using socket.
@@ -140,111 +122,81 @@ OPTIONS
        -i, --info
               Show internal TCP information. Below fields may appear:
 
-              ts  
-                     show string "ts" if the timestamp option is set
+              ts: show string "ts" if the timestamp option is set
 
-              sack
-                     show string "sack" if the sack option is set
+              sack: show string "sack" if the sack option is set
 
-              ecn
-                     show string "ecn" if the explicit congestion
-                     notification option is set
+              ecn: show string "ecn" if the explicit congestion
+              notification option is set
 
-              ecnseen
-                     show string "ecnseen" if the saw ecn flag is found
-                     in received packets
+              ecnseen: show string "ecnseen" if the saw ecn flag is 
+              found in received packets
 
-              fastopen
-                     show string "fastopen" if the fastopen option is set
+              fastopen: show string "fastopen" if the fastopen option is set
 
-              cong_alg
-                     the congestion algorithm name, the default
-                     congestion algorithm is "cubic"
+              cong_alg: the congestion algorithm name, the 
+              default congestion algorithm is "cubic"
 
-              wscale:<snd_wscale>:<rcv_wscale>
-                     if window scale option is used, this field shows the
-                     send scale factor and receive scale factor
+              wscale:<snd_wscale>:<rcv_wscale>: if window scale option is used, 
+              this field shows the send scale factor and receive scale factor
 
-              rto:<icsk_rto>
-                     tcp re-transmission timeout value, the unit is
-                     millisecond
+              rto:<icsk_rto>: tcp re-transmission timeout value, the 
+              unit is millisecond
 
-              backoff:<icsk_backoff>
-                     used for exponential backoff re-transmission, the
-                     actual re-transmission timeout value is icsk_rto <<
-                     icsk_backoff
+              backoff:<icsk_backoff>: used for exponential backoff 
+              re-transmission, the actual re-transmission timeout value 
+              is icsk_rto << icsk_backoff
 
-              rtt:<rtt>/<rttvar>
-                     rtt is the average round trip time, rttvar is the
-                     mean deviation of rtt, their units are millisecond
+              rtt:<rtt>/<rttvar>: rtt is the average round trip time, 
+              rttvar is the mean deviation of rtt, their units are millisecond
 
-              ato:<ato>
-                     ack timeout, unit is millisecond, used for delay ack
-                     mode
+              ato:<ato>: ack timeout, unit is millisecond, used for delay ack mode
 
-              mss:<mss>
-                     max segment size
+              mss:<mss>: max segment size
 
-              cwnd:<cwnd>
-                     congestion window size
+              cwnd:<cwnd>:  congestion window size
 
-              pmtu:<pmtu>
-                     path MTU value
+              pmtu:<pmtu>: path MTU value
 
-              ssthresh:<ssthresh>
-                     tcp congestion window slow start threshold
+              ssthresh:<ssthresh>: tcp congestion window slow start threshold
 
-              bytes_acked:<bytes_acked>
-                     bytes acked
+              bytes_acked:<bytes_acked>: bytes acked
 
-              bytes_received:<bytes_received>
-                     bytes received
+              bytes_received:<bytes_received>: bytes received
 
-              segs_out:<segs_out>
-                     segments sent out
+              segs_out:<segs_out>: segments sent out
 
-              segs_in:<segs_in>
-                     segments received
+              segs_in:<segs_in>: segments received
 
-              send <send_bps>bps
-                     egress bps
+              send <send_bps>bps: egress bps
 
-              lastsnd:<lastsnd>
-                     how long time since the last packet sent, the unit
-                     is millisecond
+              lastsnd:<lastsnd>: how long time since the last packet sent, 
+              the unit is millisecond
 
-              lastrcv:<lastrcv>
-                     how long time since the last packet received, the
-                     unit is millisecond
+              lastrcv:<lastrcv>: how long time since the last packet 
+              received, the unit is millisecond
 
-              lastack:<lastack>
-                     how long time since the last ack received, the unit
-                     is millisecond
+              lastack:<lastack>: how long time since the last ack received, 
+              the unit is millisecond
 
-              pacing_rate <pacing_rate>bps/<max_pacing_rate>bps
-                     the pacing rate and max pacing rate
+              pacing_rate <pacing_rate>bps/<max_pacing_rate>bps: the pacing rate 
+              and max pacing rate
 
-              rcv_space:<rcv_space>
-                     a helper variable for TCP internal auto tuning
-                     socket receive buffer
+              rcv_space:<rcv_space>: a helper variable for TCP internal 
+              auto tuning socket receive buffer
 
-              tcp-ulp-mptcp flags:[MmBbJjecv]
-              token:<rem_token(rem_id)/loc_token(loc_id)> seq:<sn>
-              sfseq:<ssn> ssnoff:<off> maplen:<maplen>
-                     MPTCP subflow information
+              tcp-ulp-mptcp flags:[MmBbJjecv], token:<rem_token(rem_id)/loc_token(loc_id)> seq:<sn>,
+              sfseq:<ssn> ssnoff:<off> maplen:<maplen>: MPTCP subflow information
 
        --tos  
               Show ToS and priority information. Below fields may appear:
 
-              tos
-                     IPv4 Type-of-Service byte
+              tos: IPv4 Type-of-Service byte
 
-              tclass
-                     IPv6 Traffic Class byte
+              tclass: IPv6 Traffic Class byte
 
-              class_id
-                     Class id set by net_cls cgroup. If class is zero
-                     this shows priority set by SO_PRIORITY.
+              class_id: Class id set by net_cls cgroup. If
+              class is zero this shows priority set by SO_PRIORITY.
 
        --cgroup
               Show cgroup information. Below fields may appear:
@@ -278,12 +230,12 @@ OPTIONS
               For netlink(7) sockets the initiating process context is
               displayed as follows:
 
-              1.  If valid pid show the process context.
+              1. If valid pid show the process context.
 
-              2.  If destination is kernel (pid = 0) show kernel
+              2. If destination is kernel (pid = 0) show kernel
               initial context.
 
-              3.  If a unique identifier has been allocated by the
+              3. If a unique identifier has been allocated by the
               kernel or netlink user, show context as
               "unavailable". This will generally indicate that
               a process has more than one netlink socket
@@ -386,27 +338,30 @@ OPTIONS
 STATE-FILTER
        STATE-FILTER allows one to construct arbitrary set of states to
        match. Its syntax is sequence of keywords state and exclude
-       followed by identifier of state.
-
-       Available identifiers are:
-
-       All standard TCP states: established, syn-sent, syn-recv,
+       followed by identifier of state. Available identifiers 
+       (standard TCP states) are: established, syn-sent, syn-recv,
        fin-wait-1, fin-wait-2, time-wait, closed, close-wait,
        last-ack, listening and closing.
 
-       all - for all the states
+       all
+              for all the states
 
-       connected - all the states except for listening and closed
+       connected
+              all the states except for listening and closed
 
-       synchronized - all the connected states except for syn-sent
+       synchronized
+              all the connected states except for syn-sent
 
-       bucket - states, which are maintained as minisockets, i.e.
-       time-wait and syn-recv
+       bucket
+              states, which are maintained as minisockets, i.e.
+              time-wait and syn-recv
 
-       big - opposite to bucket
+       big
+              opposite to bucket
 
-       bound-inactive - bound but otherwise inactive sockets (not
-       listening, connecting, etc.)
+       bound-inactive
+              bound but otherwise inactive sockets (not
+              listening, connecting, etc.)
 
 EXPRESSION
        EXPRESSION allows filtering based on specific criteria.
@@ -415,9 +370,7 @@ EXPRESSION
        precedence are or (or | or ||), and (or & or &&), and not (or !).
        If no operator is between consecutive predicates, an implicit and
        operator is assumed. Subexpressions can be grouped with "(" and
-       ")".
-
-       The following predicates are supported:
+       ")". The following predicates are supported:
 
        {dst|src} [=] HOST
               Test if the destination or source matches HOST. See HOST
@@ -449,26 +402,35 @@ EXPRESSION
               automatically allocated (rather than explicitly specified).
        
        Most operators have aliases. If no operator is supplied "=" is
-       assumed.  Each of the following groups of operators are all
+       assumed. Each of the following groups of operators are all
        equivalent:
 
-       • = == eq
+       = ==
+              eq
 
-       • != ne neq
+       !=
+              ne neq
 
-       • > gt
+       >
+              gt
 
-       • < lt
+       <
+              lt
 
-       • >= ge geq
+       >=
+              ge geq
 
-       • <= le leq
+       <=
+              le leq
 
-       • ! not
+       !
+              not
 
-       • | || or
+       | || 
+              or
 
-       • & && and
+       & &&
+              and
 
 HOST SYNTAX
        The general host syntax is [FAMILY:]ADDRESS[:PORT].
@@ -519,26 +481,25 @@ HOST SYNTAX
               name for the port to match.
        
 USAGE EXAMPLES
-       ss -t -a
-              Display all TCP sockets.
+       Display all TCP sockets.
+              ss -t -a
 
-       ss -t -a -Z
-              Display all TCP sockets with process SELinux security
-              contexts.
+       Display all TCP sockets with process SELinux security contexts.
+              ss -t -a -Z
 
-       ss -u -a
-              Display all UDP sockets.
+       Display all UDP sockets.
+              ss -u -a
+       
+       Display all established ssh connections.
+              ss -o state established '( dport = :ssh or sport = :ssh )'
 
-       ss -o state established '( dport = :ssh or sport = :ssh )'
-              Display all established ssh connections.
+       Find all local processes connected to X server. 
+              ss -x src /tmp/.X11-unix/*
 
-       ss -x src /tmp/.X11-unix/*
-              Find all local processes connected to X server.
+       List all the tcp sockets in state FIN-WAIT-1 for our apache
+       to network 193.233.7/24 and look at their timers.
+              ss -o state fin-wait-1 '( sport = :http or sport = :https )' dst
+              193.233.7/24
 
-       ss -o state fin-wait-1 '( sport = :http or sport = :https )' dst
-       193.233.7/24
-              List all the tcp sockets in state FIN-WAIT-1 for our apache
-              to network 193.233.7/24 and look at their timers.
-
-       ss -a -A 'all,!tcp'
-              List sockets in all states from all socket tables but TCP.
+       List sockets in all states from all socket tables but TCP.
+              ss -a -A 'all,!tcp'

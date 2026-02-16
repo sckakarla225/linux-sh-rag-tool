@@ -93,6 +93,9 @@ OPTIONS
        Change the mode of each FILE to MODE.  With --reference, change
        the mode of each FILE to that of RFILE.
 
+       Each MODE is of the form
+       '[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=][0-7]+'.
+
        -c, --changes
               like verbose but report only when a change is made
 
@@ -141,6 +144,3 @@ OPTIONS
 
        --version
               output version information and exit
-
-       Each MODE is of the form
-       '[ugoa]*([-+=]([rwxXst]*|[ugo]))+|[-+=][0-7]+'.

@@ -722,18 +722,18 @@ EXAMPLES
               tcpdump ip and not net localnet
 
        To print the start and end packets (the SYN and FIN packets) of
-       each TCP conversation that involves a non-local host.
+       each TCP conversation that involves a non-local host:
               tcpdump 'tcp[tcpflags] & (tcp-syn|tcp-fin) != 0 and not src and dst net localnet'
 
        To print the TCP packets with flags RST and ACK both set.  (i.e.
        select only the RST and ACK flags in the flags field, and if the
-       result is "RST and ACK both set", match)
+       result is "RST and ACK both set", match):
               tcpdump 'tcp[tcpflags] & (tcp-rst|tcp-ack) == (tcp-rst|tcp-ack)'
 
        To print all IPv4 HTTP packets to and from port 80, i.e. print
        only packets that contain data, not, for example, SYN and FIN
        packets and ACK-only packets.  (IPv6 is left as an exercise for
-       the reader.)
+       the reader.):
               tcpdump 'tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)'
 
        To print IP packets longer than 576 bytes sent through gateway

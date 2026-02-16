@@ -74,6 +74,14 @@ OPTIONS
        All remaining arguments are names of input files; if no input
        files are specified, then the standard input is read.
 
+REGULAR EXPRESSIONS
+       POSIX.2 BREs should be supported, but they aren't completely
+       because of performance problems.  The \n sequence in a regular
+       expression matches the newline character, and similarly for \a,
+       \t, and other sequences.  The -E option switches to using extended
+       regular expressions instead; it has been supported for years by
+       GNU sed, and is now included in POSIX.
+
 ZERO-ADDRESS COMMANDS
        : label
               Label for b and t commands.
@@ -86,7 +94,7 @@ ZERO-ADDRESS COMMANDS
               The closing bracket of a { } block.
 
 ZERO- OR ONE- ADDRESS COMMANDS
-       = 
+       =
               Print the current line number.
 
        a \ text
@@ -211,9 +219,8 @@ ADDRESSES
 
        After the address (or address-range), and before the command, a !
        may be inserted, which specifies that the command shall only be
-       executed if the address (or address-range) does not match.
-
-       The following address types are supported:
+       executed if the address (or address-range) does not match. The following 
+       address types are supported:
 
        number
               Match only the specified line number (which increments
@@ -256,11 +263,3 @@ ADDRESSES
        addr1,~N
               Will match addr1 and the lines following addr1 until the
               next line whose input line number is a multiple of N.
-
-REGULAR EXPRESSIONS
-       POSIX.2 BREs should be supported, but they aren't completely
-       because of performance problems.  The \n sequence in a regular
-       expression matches the newline character, and similarly for \a,
-       \t, and other sequences.  The -E option switches to using extended
-       regular expressions instead; it has been supported for years by
-       GNU sed, and is now included in POSIX.

@@ -6,12 +6,11 @@ SYNOPSIS
 
 DESCRIPTION
        Filter adjacent matching lines from INPUT (or standard input),
-       writing to OUTPUT (or standard output).
-       With no options, matching lines are merged to the first
-       occurrence.
-       Mandatory arguments to long options are mandatory for short
-       options too.
+       writing to OUTPUT (or standard output). With no options, matching lines 
+       are merged to the first occurrence. Mandatory arguments to long options
+       are mandatory for short options too.
 
+OPTIONS 
        -c, --count
               prefix lines by the number of occurrences
 

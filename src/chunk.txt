@@ -1,0 +1,209 @@
+General formatting notes (repeated sections):
+** section headers are at left most indentation, all CAPS, 
+no additional chars, one blank line between sections **
+
+NAME:
+    - Follows this format => 'command name' - 'command description'
+ 
+SYNOPSIS:
+    - Each line represents a command structure
+    - Always starts with 'command name', followed by the structure
+    - Additional: may include additional definitions/enums for properties
+    within the command (i.e., OPTIONS and OBJECT for 'ip')
+
+DESCRIPTION (including similar/adjacent sections):
+    - Paragraphs (or bullet lists) structured separated by blank lines
+    - Adjacent sections in sample DB:
+        - SETUID AND SETGID BITS (chmod)
+        - RESTRICTED DELETION FLAG OR STICKY BIT (chmod)
+        - IPV6 LINK-LOCAL DESTINATIONS (ping)
+        - ICMP PACKET DETAILS (ping)
+        - DUPLICATE AND DAMAGED PACKETS (ping)
+        - ID COLLISIONS (ping)
+        - TRYING DIFFERENT DATA PATTERNS (ping)
+        - TTL DETAILS (ping)
+        - VERSION (curl)
+        - PROTOCOLS (curl)
+        - PORT SCANNING BASICS (nmap)
+        - STANDARDS CONFORMANCE (find)
+        - SIMPLE USAGE (dig)
+        - MULTIPLE QUERIES (dig)
+        - ARGUMENTS (nslookup)
+        - SIGNALS (gawk)
+        - POSIX COMPATIBILITY (gawk)
+        - GNU EXTENSIONS (gawk)
+        - AWK PROGRAM EXECUTION (gawk)
+        - GENERAL (rsync)
+        - SETUP (rsync)
+        - USAGE (rsync)
+        - SORTED TRANSFER ORDER (rsync)
+        - MULTI-HOST SECURITY (rsync)
+        - BATCH MODE (rsync)
+        - SYMBOLIC LINKS (rsync)
+        - CONNECTING TO AN RSYNC DAEMON (rsync)
+        - USING RSYNC-DAEMON FEATURES VIA A REMOTE-SHELL CONNECTION (rsync)
+        - STARTING AN RSYNC DAEMON TO ACCEPT CONNECTIONS (rsync)
+
+OPTIONS:
+    - Flag name mostly starts with a '-' or '--'
+    - Content directly below flag name (1 indentation, until next flag name, may
+    include newlines in between) describes the option and how to use it
+    - Options are separated by a new line
+    - Some flag name lines include multiple flags (for GNU version vs. POSIX standard)
+    - Additional: may include an additional paragraph that provides a 
+    general explanation for the options before/after it
+    - Additional: may include some important sub-options that may be separated
+    by a newline (e.g. environment variables specific to option flag) 
+    (if a flag, has same 1-indent format)
+    - Adjacent sections in sample DB:
+        - LIST OF AVAILABLE METHODS (traceroute)
+        - ARRAY SPECIFICATIONS (tr)
+        - TRANSLATION RULES (tr)
+        - OPERATION MODE OPTIONS (tar)
+        - OPERATION MODIFIERS (tar)
+        - OVERWRITE CONTROL (tar)
+        - OUTPUT STREAM SELECTION (tar)
+        - HANDLING OF FILE ATTRIBUTES (tar)
+        - EXTENDED FILE ATTRIBUTES (tar)
+        - DEVICE SELECTION AND SWITCHING (tar)
+        - DEVICE BLOCKING (tar)
+        - ARCHIVE FORMAT SELECTION (tar)
+        - COMPRESSION OPTIONS (tar)
+        - LOCAL FILE SELECTION (tar)
+        - FILE NAME TRANSFORMATIONS (tar)
+        - FILE NAME MATCHING OPTIONS (tar)
+        - COMPATIBILITY OPTIONS (tar)
+        - GENERIC PROGRAM INFORMATION (grep)
+        - PATTERN SYNTAX (grep)
+        - MATCHING CONTROL (grep)
+        - GENERIC OUTPUT CONTROL (grep)
+        - OUTPUT LINE PREFIX CONTROL (grep)
+        - CONTEXT LINE CONTROL (grep)
+        - FILE AND DIRECTORY SELECTION (grep)
+        - OTHER OPTIONS (grep)
+        - HOST DISCOVERY (nmap)
+        - PORT SCANNING TECHNIQUES (nmap)
+        - SERVICE AND VERSION DETECTION (nmap)
+        - OS DETECTION (nmap)
+        - TIMING AND PERFORMANCE (nmap)
+        - FIREWALL/IDS EVASION AND SPOOFING (nmap)
+        - VERBOSITY AND DEBUGGING OPTIONS (nmap)
+        - MISCELLANEOUS OPTIONS (nmap)
+        - DAEMON OPTIONS (rsync)
+
+EXAMPLE(S):
+    - Example description/objective/function comes first (ends in a ':')
+    (may be multiple paragraphs)
+    - Content directly below the example description is the corresponding command
+    (generally a single line for the command)
+    - Examples are separated by a newline
+
+(REGULAR) EXPRESSIONS:
+    - Purpose: outlines the syntax and semantics of the expressions/logic that
+    are supported by the command
+    - Starts with general explanations of the expression(s)/logic(s)/command(s) 
+    -- major headers represent the subject of the expression(s)/logic(s)/command(s)
+    (paragraph format) --> includes any syntax rules/guides (separate these?)
+    - Explanations (or bullet lists) provide context to 
+    expressions/operators/predicates above or below
+    - Specific expressions/operators/predicates names are left-most indent of section
+    - Content directly below expressions/operators/predicates/commands 
+    explain it (1-indent)
+    - Additional: content directly below expressions/operators/predicates/commands 
+    may include additional directives that are separated by a newline
+    (no additional indent for these)
+    - Note: general explanations or specific expressions are not always included
+    in an expressions section (may include one/both)
+    - Adjacent sections in sample DB:
+        - REGULAR EXPRESSIONS (grep)
+        - CHARACTER CLASSES AND BRACKET EXPRESSIONS (grep)
+        - ANCHORING (grep)
+        - THE BACKLASH CHARACTERS AND SPECIAL EXPRESSIONS (grep)
+        - REPETITION (grep)
+        - CONCATENTATION (grep)
+        - ALTERNATION (grep)
+        - PRECEDENCE (grep)
+        - BACK-REFERENCES AND SUBEXPRESSIONS (grep)
+        - BASIC VS EXTENDED REGULAR EXPRESSIONS (grep)
+        - STATE-FILTER (ss)
+        - EXPRESSION (ss)
+        - HOST SYNTAX (ss)
+        - ZERO-ADDRESS COMMANDS (sed)
+        - ZERO- OR ONE- ADDRESS COMMANDS (sed)
+        - COMMANDS WHICH ACCEPT ADDRESS RANGES (sed)
+        - ADDRESSES (sed)
+        - REGULAR EXPRESSIONS (sed)
+        - POSITIONAL OPTIONS (find)
+        - GLOBAL OPTIONS (find)
+        - TESTS (find)
+        - ACTIONS (find)
+        - OPERATORS (find)
+        - URL (curl)
+        - GLOBBING (curl)
+        - VARIABLES (curl)
+        - PROXY PROTOCOL PREFIXES (curl)
+        - TARGET SPECIFICATION (nmap)
+        - PORT SPECIFICATION AND SCAN ORDER (nmap)
+        - NMAP SCRIPTING ENGINE (nmap)
+        - QUERY OPTIONS (dig)
+        - INTERACTIVE COMMANDS (nslookup)
+        - VARIABLES, RECORDS AND FIELDS OVERVIEW (gawk)
+        - RECORDS (gawk)
+        - FIELDS (gawk)
+        - BUILT-IN VARIABLES (gawk)
+        - ARRAYS (gawk)
+        - NAMESPACES (gawk)
+        - VARIABLE TYPING AND CONVERSION (gawk)
+        - OCTAL AND HEXADECIMAL CONSTANTS (gawk)
+        - STRING CONSTANTS (gawk)
+        - REGEXP CONSTANTS (gawk)
+        - PATTERNS AND ACTIONS OVERVIEW (gawk)
+        - PATTERNS (gawk)
+        - REGULAR EXPRESSIONS (gawk)
+        - ACTIONS (gawk)
+        - OPERATORS (gawk)
+        - CONTROL STATEMENTS (gawk)
+        - I/O STATEMENTS (gawk)
+        - THE PRINTF STATEMENT (gawk)
+        - SPECIAL FILE NAMES (gawk)
+        - NUMERIC FUNCTIONS (gawk)
+        - STRING FUNCTIONS (gawk)
+        - TIME FUNCTIONS (gawk)
+        - INTERNATIONALIZATION (gawk)
+        - COPYING TO A DIFFERENT NAME (rsync)
+        - ADVANCED USAGE (rsync)
+        - FILTER RULES (rsync)
+        - SIMPLE INCLUDE/EXCLUDE RULES (rsync)
+        - FILTER RULES WHEN DELETING (rsync)
+        - FILTER RULES IN DEPTH (rsync)
+        - PATTERN MATCHING RULES (rsync)
+        - FILTER RULE MODIFIERS (rsync)
+        - MERGE-FILE FILTER RULES (rsync)
+        - LIST-CLEARING FILTER RULE (rsync)
+        - ANCHORING INCLUDE/EXCLUDE RULES (rsync)
+        - PER-DIRECTORY RULES AND DELETE (rsync)
+        - TRANSFER RULES (rsync)
+
+ENVIRONMENT (VARIABLES): 
+    - Variable name is always in all caps (left-most indent of section)
+    - Content directly below the variable name describes the variable and
+    how its used (1 indentation, until next flag name, may
+    include newlines in between)
+    - Additional: may include an additional paragraph(s) that provides a 
+    general explanation for the options before/after it 
+
+OUTPUT (FORMAT): 
+    - Purpose: explanations of the output or its format for a given command
+    - Starts with general explanations of the output or its format (may
+    directly include output flag descriptions) --> paragraph format
+    - Output flags mostly start with '-' or '--' (used for viewing output,
+    saving outputs to files, or live tracking outputs in the terminal)
+    - Content directly below flag name (1 indentation, until next flag name, may
+    include newlines in between) describes the flag and how to use it
+    - Output flags are separated by a new line
+    - Some flag name lines include multiple flags (for GNU version vs. POSIX standard)
+    - Adjacent sections in sample DB
+        - PROGRESS METER (curl)
+        - NMAP OUTPUT FORMATS (nmap)
+        - MISCELLANEOUS OUTPUT OPTIONS (nmap)
+        - UNUSUAL FILENAMES (find)

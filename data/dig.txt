@@ -45,22 +45,51 @@ SIMPLE USAGE
        A typical invocation of dig looks like: dig @server name type
        where:
 
-       server
-              is the name or IP address of the name server to query. 
-              This can be an IPv4 address in dotted-decimal notation 
-              or an IPv6 address in colon-delimited notation. When the 
-              supplied server argument is a hostname, dig resolves 
-              that name before querying that name server.
+       server: is the name or IP address of the name server to query. 
+       This can be an IPv4 address in dotted-decimal notation 
+       or an IPv6 address in colon-delimited notation. When the 
+       supplied server argument is a hostname, dig resolves 
+       that name before querying that name server.
        
-       name
-              is the name of the resource record that is to be looked up.
+       name: is the name of the resource record that is to be looked up.
        
-       type
-              indicates what type of query is required - ANY, A, MX, 
-              SIG, etc. type can be any valid query type. If no type 
-              argument is supplied, dig performs a lookup for an A record.
+       type: indicates what type of query is required - ANY, A, MX, 
+       SIG, etc. type can be any valid query type. If no type 
+       argument is supplied, dig performs a lookup for an A record.
+
+MULTIPLE QUERIES
+       The BIND 9 implementation of dig supports specifying multiple 
+       queries on the command line (in addition to supporting the 
+       -f batch file option). Each of those queries can be supplied 
+       with its own set of flags, options, and query options.
+
+       In this case, each query argument represents an individual query 
+       in the command-line syntax described above. Each consists of 
+       any of the standard options and flags, the name to be looked up, 
+       an optional query type and class, and any query options that 
+       should be applied to that query.
+
+       A global set of query options, which should be applied to all 
+       queries, can also be supplied. These global query options must 
+       precede the first tuple of name, class, type, options, flags, 
+       and query options supplied on the command line. Any global query 
+       options (except +cmd and +short options) can be overridden by 
+       a query-specific set of query options. For example:
+       dig +qr www.isc.org any -x 127.0.0.1 isc.org ns +noqr
+       shows how dig can be used from the command line to make three 
+       lookups: an ANY query for www.isc.org, a reverse lookup of 127.0.0.1, 
+       and a query for the NS records of isc.org. A global query option 
+       of +qr is applied, so that dig shows the initial query it made 
+       for each lookup. The final query has a local query option of 
+       +noqr which means that dig does not print the initial query 
+       when it looks up the NS records for isc.org.
 
 OPTIONS
+       Note: Only the -k option should be used, rather than the -y option, 
+       because with -y the shared secret is supplied as a command-line 
+       argument in clear text. This may be visible in the output 
+       from ps1 or in a history file maintained by the user's shell.
+
        -4
               This option indicates that only IPv4 should be used.
        
@@ -156,12 +185,6 @@ OPTIONS
               hmac-sha1, hmac-sha224, hmac-sha256, hmac-sha384, or 
               hmac-sha512. If hmac is not specified, the default is 
               hmac-md5; if MD5 was disabled, the default is hmac-sha256.
-       
-       Note:
-              Only the -k option should be used, rather than the -y option, 
-              because with -y the shared secret is supplied as a command-line 
-              argument in clear text. This may be visible in the output 
-              from ps1 or in a history file maintained by the user's shell.
 
 QUERY OPTIONS 
        dig provides a number of query options which affect the way in which 
@@ -639,30 +662,3 @@ QUERY OPTIONS
        +zflag, +nozflag
               This option sets [or does not set] the last unassigned 
               DNS header flag in a DNS query. This flag is off by default.
-
-MULTIPLE QUERIES
-       The BIND 9 implementation of dig supports specifying multiple 
-       queries on the command line (in addition to supporting the 
-       -f batch file option). Each of those queries can be supplied 
-       with its own set of flags, options, and query options.
-
-       In this case, each query argument represents an individual query 
-       in the command-line syntax described above. Each consists of 
-       any of the standard options and flags, the name to be looked up, 
-       an optional query type and class, and any query options that 
-       should be applied to that query.
-
-       A global set of query options, which should be applied to all 
-       queries, can also be supplied. These global query options must 
-       precede the first tuple of name, class, type, options, flags, 
-       and query options supplied on the command line. Any global query 
-       options (except +cmd and +short options) can be overridden by 
-       a query-specific set of query options. For example:
-       dig +qr www.isc.org any -x 127.0.0.1 isc.org ns +noqr
-       shows how dig can be used from the command line to make three 
-       lookups: an ANY query for www.isc.org, a reverse lookup of 127.0.0.1, 
-       and a query for the NS records of isc.org. A global query option 
-       of +qr is applied, so that dig shows the initial query it made 
-       for each lookup. The final query has a local query option of 
-       +noqr which means that dig does not print the initial query 
-       when it looks up the NS records for isc.org.

@@ -9,10 +9,56 @@ DESCRIPTION
        URLs. It supports these protocols: DICT, FILE, FTP, FTPS, GOPHER,
        GOPHERS, HTTP, HTTPS, IMAP, IMAPS, LDAP, LDAPS, MQTT, POP3, POP3S,
        RTMP, RTMPS, RTSP, SCP, SFTP, SMB, SMBS, SMTP, SMTPS, TELNET,
-       TFTP, WS and WSS.
+       TFTP, WS and WSS. curl is powered by libcurl for all transfer-related 
+       features. See libcurl(3) for details.
 
-       curl is powered by libcurl for all transfer-related features. See
-       libcurl(3) for details.
+VERSION
+       This man page describes curl 8.6.0. If you use a later version,
+       chances are this man page does not fully document it. If you use
+       an earlier version, this document tries to include version
+       information about which specific version that introduced changes.
+
+       You can always learn which the latest curl version is by running
+
+       curl https://curl.se/info
+
+       The online version of this man page is always showing the latest
+       incarnation: https://curl.se/docs/manpage.html
+
+PROTOCOLS
+       curl supports numerous protocols, or put in URL terms: schemes.
+       Your particular build may not support them all.
+
+       DICT: Lets you lookup words using online dictionaries.
+       FILE: Read or write local files. curl does not support accessing
+       file:// URL remotely, but when running on Microsoft Windows
+       using the native UNC approach works.
+       FTP(S): curl supports the File Transfer Protocol with a lot of
+       tweaks and levers. With or without using TLS.
+       GOPHER(S): Retrieve files.
+       HTTP(S): curl supports HTTP with numerous options and variations. It
+       can speak HTTP version 0.9, 1.0, 1.1, 2 and 3 depending on
+       build options and the correct command line options.
+       IMAP(S): Using the mail reading protocol, curl can "download" emails
+       for you. With or without using TLS.
+       LDAP(S): curl can do directory lookups for you, with or without TLS.
+       MQTT: curl supports MQTT version 3. Downloading over MQTT equals
+       "subscribe" to a topic while uploading/posting equals
+       "publish" on a topic. MQTT over TLS is not supported (yet).
+       POP3(S): Downloading from a pop3 server means getting a mail. With
+       or without using TLS.
+       RTMP(S): The Realtime Messaging Protocol is primarily used to serve
+       streaming media and curl can download it.
+       RTSP: curl supports RTSP 1.0 downloads.
+       SCP: curl supports SSH version 2 scp transfers.
+       SFTP: curl supports SFTP (draft 5) done over SSH version 2.
+       SMB(S): curl supports SMB version 1 for upload and download.
+       SMTP(S): Uploading contents to an SMTP server means sending an
+       email. With or without TLS.
+       TELNET: Telling curl to fetch a telnet URL starts an interactive
+       session where it sends what it reads on stdin and outputs
+       what the server sends it.
+       TFTP: curl can do TFTP downloads and uploads.
 
 URL
        The URL syntax is protocol-dependent. You find a detailed
@@ -54,9 +100,7 @@ GLOBBING
        or you can get sequences of alphanumeric series by using [] as in:
 
        "ftp://ftp.example.com/file[1-100].txt"
-
-       "ftp://ftp.example.com/file[001-100].txt"    (with leading zeros)
-
+       "ftp://ftp.example.com/file[001-100].txt" (with leading zeros)
        "ftp://ftp.example.com/file[a-z].txt"
 
        Nested sequences are not supported, but you can use several ones
@@ -68,16 +112,13 @@ GLOBBING
        number or letter:
 
        "http://example.com/file[1-100:10].txt"
-
        "http://example.com/file[a-z:2].txt"
 
        When using [] or {} sequences when invoked from a command line
        prompt, you probably have to put the full URL within double quotes
        to avoid the shell from interfering with it. This also goes for
        other characters treated special, like for example '&', '?' and
-       '*'.
-
-       Switch off globbing with -g, --globoff.
+       '*'. Switch off globbing with -g, --globoff.
 
 VARIABLES
        curl supports command line variables (added in 8.3.0). Set
@@ -102,8 +143,8 @@ VARIABLES
        Example. Get the USER environment variable into the URL, fail if
        USER is not set:
 
-        --variable '%USER'
-        --expand-url = "https://example.com/api/{{USER}}/method"
+       --variable '%USER'
+       --expand-url = "https://example.com/api/{{USER}}/method"
 
        When expanding variables, curl supports a set of functions that
        can make the variable contents more convenient to use. It can trim
@@ -118,127 +159,12 @@ VARIABLES
        variable called "fix". Make sure that the content is trimmed and
        percent-encoded sent as POST data:
 
-         --variable %HOME
-         --expand-variable fix@{{HOME}}/.secret
-         --expand-data "{{fix:trim:url}}"
-         https://example.com/
+       --variable %HOME
+       --expand-variable fix@{{HOME}}/.secret
+       --expand-data "{{fix:trim:url}}"
+       https://example.com/
 
        Command line variables and expansions were added in in 8.3.0.
-
-OUTPUT
-       If not told otherwise, curl writes the received data to stdout. It
-       can be instructed to instead save that data into a local file,
-       using the -o, --output or -O, --remote-name options. If curl is
-       given multiple URLs to transfer on the command line, it similarly
-       needs multiple options for where to save them.
-
-       curl does not parse or otherwise "understand" the content it gets
-       or writes as output. It does no encoding or decoding, unless
-       explicitly asked to with dedicated command line options.
-
-PROTOCOLS
-       curl supports numerous protocols, or put in URL terms: schemes.
-       Your particular build may not support them all.
-
-       DICT
-              Lets you lookup words using online dictionaries.
-
-       FILE
-              Read or write local files. curl does not support accessing
-              file:// URL remotely, but when running on Microsoft Windows
-              using the native UNC approach works.
-
-       FTP(S)
-              curl supports the File Transfer Protocol with a lot of
-              tweaks and levers. With or without using TLS.
-
-       GOPHER(S)
-              Retrieve files.
-
-       HTTP(S)
-              curl supports HTTP with numerous options and variations. It
-              can speak HTTP version 0.9, 1.0, 1.1, 2 and 3 depending on
-              build options and the correct command line options.
-
-       IMAP(S)
-              Using the mail reading protocol, curl can "download" emails
-              for you. With or without using TLS.
-
-       LDAP(S)
-              curl can do directory lookups for you, with or without TLS.
-
-       MQTT
-              curl supports MQTT version 3. Downloading over MQTT equals
-              "subscribe" to a topic while uploading/posting equals
-              "publish" on a topic. MQTT over TLS is not supported (yet).
-
-       POP3(S)
-              Downloading from a pop3 server means getting a mail. With
-              or without using TLS.
-
-       RTMP(S)
-              The Realtime Messaging Protocol is primarily used to serve
-              streaming media and curl can download it.
-
-       RTSP
-              curl supports RTSP 1.0 downloads.
-
-       SCP
-              curl supports SSH version 2 scp transfers.
-
-       SFTP
-              curl supports SFTP (draft 5) done over SSH version 2.
-
-       SMB(S)
-              curl supports SMB version 1 for upload and download.
-
-       SMTP(S)
-              Uploading contents to an SMTP server means sending an
-              email. With or without TLS.
-
-       TELNET
-              Telling curl to fetch a telnet URL starts an interactive
-              session where it sends what it reads on stdin and outputs
-              what the server sends it.
-
-       TFTP
-              curl can do TFTP downloads and uploads.
-
-PROGRESS METER
-       curl normally displays a progress meter during operations,
-       indicating the amount of transferred data, transfer speeds and
-       estimated time left, etc. The progress meter displays the transfer
-       rate in bytes per second. The suffixes (k, M, G, T, P) are 1024
-       based. For example 1k is 1024 bytes. 1M is 1048576 bytes.
-
-       curl displays this data to the terminal by default, so if you
-       invoke curl to do an operation and it is about to write data to
-       the terminal, it disables the progress meter as otherwise it would
-       mess up the output mixing progress meter and response data.
-
-       If you want a progress meter for HTTP POST or PUT requests, you
-       need to redirect the response output to a file, using shell
-       redirect (>), -o, --output or similar.
-
-       This does not apply to FTP upload as that operation does not spit
-       out any response data to the terminal.
-
-       If you prefer a progress "bar" instead of the regular meter, -#,
-       --progress-bar is your friend. You can also disable the progress
-       meter completely with the -s, --silent option.
-
-VERSION
-       This man page describes curl 8.6.0. If you use a later version,
-       chances are this man page does not fully document it. If you use
-       an earlier version, this document tries to include version
-       information about which specific version that introduced changes.
-
-       You can always learn which the latest curl version is by running
-
-       curl https://curl.se/info
-
-       The online version of this man page is always showing the latest
-       incarnation: https://curl.se/docs/manpage.html
 
 OPTIONS
        Options start with one or two dashes. Many of the options require
@@ -659,21 +585,14 @@ OPTIONS
               when -K, --config is used. The default config file is
               checked for in the following places in this order:
 
-              1) "$CURL_HOME/.curlrc"
-
-              2) "$XDG_CONFIG_HOME/curlrc" (Added in 7.73.0)
-
-              3) "$HOME/.curlrc"
-
-              4) Windows: "%USERPROFILE%\.curlrc"
-
-              5) Windows: "%APPDATA%\.curlrc"
-
-              6) Windows: "%USERPROFILE%\Application Data\.curlrc"
-
-              7) Non-Windows: use getpwuid to find the home directory
-
-              8) On Windows, if it finds no .curlrc file in the sequence
+              1: "$CURL_HOME/.curlrc"
+              2: "$XDG_CONFIG_HOME/curlrc" (Added in 7.73.0)
+              3: "$HOME/.curlrc"
+              4: Windows: "%USERPROFILE%\.curlrc"
+              5: Windows: "%APPDATA%\.curlrc"
+              6: Windows: "%USERPROFILE%\Application Data\.curlrc"
+              7: Non-Windows: use getpwuid to find the home directory
+              8: On Windows, if it finds no .curlrc file in the sequence
               described above, it checks for one in the same dir the curl
               executable is placed.
 
@@ -969,7 +888,6 @@ OPTIONS
 
        --data-ascii <data>
               (HTTP) This is just an alias for -d, --data.
-
               --data-ascii can be used several times in a command line
 
               Example:
@@ -3516,16 +3434,16 @@ OPTIONS
               optionally prefixed by zero or more modifiers. Available
               modifiers are:
 
-              +      Permit this protocol in addition to protocols
-                     already permitted (this is the default if no
-                     modifier is used).
+              + : Permit this protocol in addition to protocols
+              already permitted (this is the default if no
+              modifier is used).
 
-              -      Deny this protocol, removing it from the list of
-                     protocols already permitted.
+              - : Deny this protocol, removing it from the list of
+              protocols already permitted.
 
-              =      Permit only this protocol (ignoring the list already
-                     permitted), though subject to later modification by
-                     subsequent entries in the comma separated list.
+              = : Permit only this protocol (ignoring the list already
+              permitted), though subject to later modification by
+              subsequent entries in the comma separated list.
 
               For example: --proto -ftps uses the default protocols, but
               disables ftps
@@ -5808,13 +5726,10 @@ OPTIONS
 
               Available functions:
 
-              trim   removes all leading and trailing white space.
-
-              json   outputs the content using JSON string quoting rules.
-
-              url    shows the content URL (percent) encoded.
-
-              b64    expands the variable base64 encoded
+              trim - removes all leading and trailing white space.
+              json - outputs the content using JSON string quoting rules.
+              url - shows the content URL (percent) encoded.
+              b64 - expands the variable base64 encoded
 
               --variable can be used several times in a command line
 
@@ -6341,10 +6256,9 @@ OPTIONS
 ENVIRONMENT
        The environment variables can be specified in lower case or upper
        case. The lower case version has precedence. http_proxy is an
-       exception as it is only available in lower case.
-
-       Using an environment variable to set the proxy has the same effect
-       as using the -x, --proxy option.
+       exception as it is only available in lower case. Using an environment 
+       variable to set the proxy has the same effect as using the -x, 
+       --proxy option.
 
        http_proxy [protocol://]<host>[:port]
               Sets the proxy server to use for HTTP.
@@ -6358,8 +6272,8 @@ ENVIRONMENT
               in a URL. FTP, FTPS, POP3, IMAP, SMTP, LDAP, etc.
 
        ALL_PROXY [protocol://]<host>[:port]
-              Sets the proxy server to use if no protocol-specific proxy
-              is set.
+              Sets the proxy server to use if no protocol-specific 
+              proxy is set.
 
        NO_PROXY <comma-separated list of hosts/domains>
               list of host names that should not go through any proxy. If
@@ -6458,13 +6372,10 @@ ENVIRONMENT
 
 PROXY PROTOCOL PREFIXES
        The proxy string may be specified with a protocol:// prefix to
-       specify alternative proxy protocols.
-
-       If no protocol is specified in the proxy string or if the string
-       does not match a supported one, the proxy is treated as an HTTP
-       proxy.
-
-       The supported proxy protocol prefixes are as follows:
+       specify alternative proxy protocols. If no protocol is specified in 
+       the proxy string or if the string does not match a supported one, 
+       the proxy is treated as an HTTP proxy. The supported proxy protocol 
+       prefixes are as follows:
 
        http://
               Makes it use it as an HTTP proxy. The default if no scheme
@@ -6484,3 +6395,37 @@ PROXY PROTOCOL PREFIXES
 
        socks5h://
               Makes it the equivalent of --socks5-hostname
+
+OUTPUT
+       If not told otherwise, curl writes the received data to stdout. It
+       can be instructed to instead save that data into a local file,
+       using the -o, --output or -O, --remote-name options. If curl is
+       given multiple URLs to transfer on the command line, it similarly
+       needs multiple options for where to save them.
+
+       curl does not parse or otherwise "understand" the content it gets
+       or writes as output. It does no encoding or decoding, unless
+       explicitly asked to with dedicated command line options.
+
+PROGRESS METER
+       curl normally displays a progress meter during operations,
+       indicating the amount of transferred data, transfer speeds and
+       estimated time left, etc. The progress meter displays the transfer
+       rate in bytes per second. The suffixes (k, M, G, T, P) are 1024
+       based. For example 1k is 1024 bytes. 1M is 1048576 bytes.
+
+       curl displays this data to the terminal by default, so if you
+       invoke curl to do an operation and it is about to write data to
+       the terminal, it disables the progress meter as otherwise it would
+       mess up the output mixing progress meter and response data.
+
+       If you want a progress meter for HTTP POST or PUT requests, you
+       need to redirect the response output to a file, using shell
+       redirect (>), -o, --output or similar.
+
+       This does not apply to FTP upload as that operation does not spit
+       out any response data to the terminal.
+
+       If you prefer a progress "bar" instead of the regular meter, -#,
+       --progress-bar is your friend. You can also disable the progress
+       meter completely with the -s, --silent option.
