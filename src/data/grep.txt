@@ -619,7 +619,7 @@ ENVIRONMENT
               “illegal”, but since they are not really against the law
               the default is to diagnose them as “invalid”.
        
-EXAMPLE
+EXAMPLES
        The following example outputs the location and contents of any
        line containing “f” and ending in “.c”, within all files in the
        current directory whose names contain “g” and end in “.h”.  The -n
