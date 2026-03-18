@@ -12,10 +12,21 @@ from metadata import (
     OUTPUTMetadataModel
 )
 from constants import (
-    ADJACENT_SECTIONS, 
+    ADJACENT_SECTIONS,
     TARGET_COMMAND_SECTIONS,
     CONTENT_INDENT,
-    COMMAND_CATEGORIES
+    MAX_TOKEN_LIMIT,
+)
+from utils import (
+    is_section_header,
+    get_command_category,
+    fix_section_content_indent,
+    starts_with_command_name,
+    count_tokens,
+    overlap_text,
+    starts_with_indent,
+    starts_with_dash,
+    split_text_by_tokens
 )
 
 class ManPageChunk(BaseModel):
@@ -42,31 +53,6 @@ class ManPageSplitter:
     def read_man_page(self) -> str:
         with open(self.man_page_path, "r") as file:
             return file.read()
-
-    def is_section_header(self, line: str) -> bool:
-        stripped_line = line.strip()
-        if not stripped_line:
-            return False
-
-        # 0-indented lines match
-        if line != line.lstrip():
-            return False
-        # section headers are all CAPS, no additional chars
-        return bool(re.fullmatch(r"[A-Z0-9][A-Z0-9 \t\(\)\-]*", stripped_line))
-
-    def fix_section_content_indent(self, section_content: str) -> str:
-        if not section_content:
-            return section_content
-        
-        # remove 1-indent from every line
-        lines = section_content.splitlines(keepends=True)
-        result = []
-        for line in lines:
-            if line.startswith(CONTENT_INDENT):
-                line = line[len(CONTENT_INDENT):]
-            result.append(line)
-        
-        return "".join(result).strip()
     
     def get_section_content(self, section_name: str) -> str | None:
         lines = self.man_page_content.splitlines(keepends=True)
@@ -76,11 +62,11 @@ class ManPageSplitter:
 
         for line in lines:
             if not in_section:
-                if line.strip() == target and self.is_section_header(line):
+                if line.strip() == target and is_section_header(line):
                     in_section = True
                 continue
 
-            if self.is_section_header(line):
+            if is_section_header(line):
                 break
             
             content_parts.append(line)
@@ -89,26 +75,19 @@ class ManPageSplitter:
             return None
         
         content = "".join(content_parts).strip()
-        formatted_content = self.fix_section_content_indent(content)
+        formatted_content = fix_section_content_indent(content)
         return formatted_content.strip()
-
-    def get_command_category(self, command_name: str) -> str:
-        if command_name in COMMAND_CATEGORIES["FILE_PROCESSING"]:
-            return "FILE_PROCESSING"
-        if command_name in COMMAND_CATEGORIES["NETWORKING"]:
-            return "NETWORKING"
-        return "UNKNOWN"
 
     def chunk_name(self) -> list[ManPageChunk]:
         content = self.get_section_content("NAME")
         if content is None or not content.strip():
-            print(f"No chunks found for NAME section")
+            print("No chunks found for NAME section")
             return []
 
         metadata = NAMEMetadataModel(
             command_name=self.command_name,
             section_category="NAME",
-            command_category=self.get_command_category(self.command_name),
+            command_category=get_command_category(self.command_name),
             source_file=self.man_page_path,
             utility="LOW"
         )
@@ -122,18 +101,298 @@ class ManPageSplitter:
         return [chunk]
 
     def chunk_synopsis(self) -> list[ManPageChunk]:
-        return
+        content = self.get_section_content("SYNOPSIS")
+        if content is None or not content.strip():
+            print("No chunks found for SYNOPSIS section")
+            return []
+        
+        # split the content into line units
+        line_units: list[str] = []
+        lines = content.splitlines()
+        
+        current_line: list[str] = []
+        for line in lines:
+            stripped_line = line.strip()
+            if starts_with_command_name(stripped_line, self.command_name):
+                if current_line:
+                    line_units.append("".join(current_line))
+                    current_line = []
+                current_line.append(stripped_line.strip())
+            else:
+                if current_line:
+                    current_line.append(stripped_line.strip())
+        
+        if current_line:
+            line_units.append("\n".join(current_line))
 
-    def chunk_description(self) -> list[ManPageChunk]:
-        return
+        # form chunks from the line units
+        chunks: list[ManPageChunk] = []
+        current_chunk: list[str] = []
+        current_chunk_tokens = 0
+        
+        for line in line_units:
+            num_tokens = count_tokens(line)
+            if current_chunk_tokens + num_tokens > MAX_TOKEN_LIMIT:
+                # finish the current chunk
+                if current_chunk:
+                    metadata = SYNOPSISMetadataModel(
+                        command_name=self.command_name,
+                        section_category="SYNOPSIS",
+                        command_category=get_command_category(self.command_name),
+                        source_file=self.man_page_path,
+                        utility="HIGH",
+                        syntax_skeleton=True,
+                        command_variant_count=len(line_units)
+                    )
+                    
+                    chunk_id = f"{self.command_name}_synopsis_{len(chunks) + 1}"
+                    chunk_content = "\n".join(current_chunk)
+                    chunk = ManPageChunk(
+                        chunk_id=chunk_id,
+                        chunk_content=chunk_content,
+                        metadata=metadata
+                    )
+                    chunks.append(chunk)
+                    current_chunk = []
+                    current_chunk_tokens = 0
 
-    def chunk_options(self) -> list[ManPageChunk]:
-        return
+                # edge case handling for longer line units (301-384 tokens)
+                if num_tokens > MAX_TOKEN_LIMIT:
+                    # store the line as a chunk (301-384 tokens)
+                    current_chunk = [line]
+                    current_chunk_tokens = num_tokens
+                else:
+                    # store the line normally (1-300 tokens)
+                    current_chunk = [line]
+                    current_chunk_tokens = num_tokens
+            else:
+                current_chunk.append(line)
+                current_chunk_tokens += num_tokens
 
-    def chunk_expressions(self) -> list[ManPageChunk]:
-        return
+        # finish the last chunk
+        if current_chunk:
+            chunk_content = "\n".join(current_chunk)
+            metadata = SYNOPSISMetadataModel(
+                command_name=self.command_name,
+                section_category="SYNOPSIS",
+                command_category=get_command_category(self.command_name),
+                source_file=self.man_page_path,
+                utility="HIGH",
+                syntax_skeleton=True,
+                command_variant_count=len(line_units)
+            )
+            chunk_id = f"{self.command_name}_synopsis_{len(chunks) + 1}"
+            chunk = ManPageChunk(
+                chunk_id=chunk_id,
+                chunk_content=chunk_content,
+                metadata=metadata
+            )
+            chunks.append(chunk)
+        
+        return chunks
+
+    def chunk_description(self, section_name: str) -> list[ManPageChunk]:
+        content = self.get_section_content(section_name)
+        if content is None or not content.strip():
+            print(f"No chunks found for {section_name} section")
+            return []
+        
+        # split the content into overlapped chunks
+        text_chunks = overlap_text(content)
+        if not text_chunks:
+            return []
+        
+        # form chunks from the text chunks
+        chunks: list[ManPageChunk] = []
+        for i, text_chunk in enumerate[str](text_chunks):
+            metadata = DESCRIPTIONMetadataModel(
+                command_name=self.command_name,
+                section_category="DESCRIPTION",
+                subject_name=section_name,
+                command_category=get_command_category(self.command_name),
+                source_file=self.man_page_path,
+                utility="MEDIUM",
+                overlap=(i > 0),
+                fragmented=(len(text_chunks) > 1)
+            )
+            chunk_id = f"{self.command_name}_description_{section_name}_{i + 1}"
+            chunk = ManPageChunk(
+                chunk_id=chunk_id,
+                chunk_content=text_chunk,
+                metadata=metadata
+            )
+            chunks.append(chunk)
+
+        return chunks
+
+    def chunk_options(self, section_name: str) -> list[ManPageChunk]:
+        content = self.get_section_content(section_name)
+        if content is None or not content.strip():
+            print(f"No chunks found for {section_name} section")
+            return []
+        
+        # split content into option units and context units
+        option_units: list[dict[str, str]] = []
+        context_units: list[str] = []
+        lines = content.splitlines()
+        i = 0 # iterator for option units
+        j = 0 # iterator for context units
+
+        # retrieve and create option units from section
+        while i < len(lines):
+            current_line = lines[i].strip()
+            # check if current set of lines is an option
+            if starts_with_dash(current_line):
+                flag_line = current_line
+                i += 1 # go to next line to start option description
+                description_lines: list[str] = []
+                # collect description lines for current option flag
+                while i < len(lines) and (
+                    lines[i].strip() == "" or 
+                    starts_with_indent(lines[i])
+                ):
+                    description_lines.append(lines[i])
+                    i += 1
+                
+                # check if the option description contains suboptions (metadata)
+                has_suboptions = any(
+                    line.startswith(CONTENT_INDENT + CONTENT_INDENT) or len(line) - len(line.lstrip()) > len(CONTENT_INDENT)
+                    for line in description_lines
+                    if line.strip()
+                )
+                
+                # create option unit
+                option_unit = {
+                    "type": "option",
+                    "flag_line": flag_line,
+                    "description_lines": fix_section_content_indent("\n".join(description_lines).strip()),
+                    "has_suboptions": has_suboptions
+                }
+                option_units.append(option_unit)
+                continue
+            
+            # go to next line since current line is not an option
+            i += 1
+
+        # retrieve and create context units from section
+        while j < len(lines):
+            current_line = lines[j].strip()
+            # blank line, can skip
+            if current_line == "":
+                j += 1
+                continue
+            
+            # check if option section and skip it
+            next_line = lines[j + 1] if j + 1 < len(lines) else None
+            next_is_blank_or_indent = (
+                next_line is not None and (
+                    next_line.strip() == "" or 
+                    starts_with_indent(next_line)
+                )
+            )
+            if (
+                not starts_with_indent(lines[j]) 
+                and starts_with_dash(current_line)
+                and next_is_blank_or_indent
+            ):
+                j += 1 # go to start of option description
+                while j < len(lines) and (
+                    current_line == "" or 
+                    starts_with_indent(lines[j])
+                ):
+                    j += 1 # go to next line
+                continue
+            
+            # collect context paragraph lines
+            if not starts_with_indent(lines[j]) and (
+                not starts_with_dash(current_line)
+                or (j + 1 >= len(lines) or not starts_with_indent(lines[j + 1]))
+            ):
+                context_units.append(current_line)
+                j += 1 # keep iterating to collect context paragraph lines until blank line hits
+                while j < len(lines) and (
+                    current_line == "" or
+                    starts_with_indent(lines[j])
+                ):
+                    if current_line != "":
+                        context_units.append(current_line)
+                    j += 1 # go to next context paragraph line
+                continue
+
+            # go to next line since current line is not a context paragraph
+            j += 1
+
+        chunks: list[ManPageChunk] = []
+        
+        # form chunks from the option units
+        for option_unit in option_units:
+            flag_line = option_unit["flag_line"]
+            description_lines = option_unit["description_lines"]
+            has_suboptions = option_unit["has_suboptions"]
+            description_text = " ".join(
+                line.strip() for line in description_lines.splitlines() if line.strip()
+            )
+
+            flag_name_tokens = count_tokens(flag_line)
+            option_chunks = split_text_by_tokens(
+                description_text,
+                max_tokens=MAX_TOKEN_LIMIT - flag_name_tokens
+            )
+            for i, option_chunk in enumerate[str](option_chunks):
+                if i == 0:
+                    chunk_content = flag_line + " :" + option_chunk
+                else:
+                    chunk_content = flag_line + " (continued)" + " :" + option_chunk
+                
+                metadata = OPTIONSMetadataModel(
+                    command_name=self.command_name,
+                    section_category="OPTIONS",
+                    subject_name=section_name,
+                    command_category=get_command_category(self.command_name),
+                    source_file=self.man_page_path,
+                    utility="HIGH",
+                    unit_type="option_flag_unit",
+                    flag_name=flag_line,
+                    has_suboptions=has_suboptions,
+                    fragmented=(len(option_chunks) > 1)
+                )
+                chunk_id = f"{self.command_name}_options_flag_{section_name}_{i + 1}"
+                chunk = ManPageChunk(
+                    chunk_id=chunk_id,
+                    chunk_content=chunk_content,
+                    metadata=metadata
+                )
+                chunks.append(chunk)
+            
+        # form chunks from the context units
+        combined_context = " ".join(context_units)
+        context_chunks = split_text_by_tokens(combined_context)
+        for i, context_chunk in enumerate[str](context_chunks):
+            metadata = OPTIONSMetadataModel(
+                command_name=self.command_name,
+                section_category="OPTIONS",
+                subject_name=section_name,
+                command_category=get_command_category(self.command_name),
+                source_file=self.man_page_path,
+                utility="HIGH",
+                unit_type="context_unit",
+                fragmented=(len(context_chunks) > 1),
+                has_suboptions=False
+            )
+            chunk_id = f"{self.command_name}_options_context_{section_name}_{i + 1}"
+            chunk = ManPageChunk(
+                chunk_id=chunk_id,
+                chunk_content=context_chunk,
+                metadata=metadata
+            )
+            chunks.append(chunk)
+        
+        return chunks
 
     def chunk_examples(self) -> list[ManPageChunk]:
+        return
+    
+    def chunk_expressions(self) -> list[ManPageChunk]:
         return
 
     def chunk_environment(self) -> list[ManPageChunk]:
@@ -145,10 +404,26 @@ class ManPageSplitter:
 if __name__ == "__main__":
     print("Splitting man page...")
     splitter = ManPageSplitter("data/curl.txt", "curl")
+    # splitter = ManPageSplitter("data/ethtool.txt", "ethtool")
 
-    content = splitter.get_section_content("NAME")
-    if content:
-        name_chunks = splitter.chunk_name()
-        print(name_chunks)
-    else:
-        print("no content found")
+    options_sections: list[str] = []
+    if "OPTIONS" in TARGET_COMMAND_SECTIONS[splitter.command_name]:
+        options_sections.append("OPTIONS")
+    for section in TARGET_COMMAND_SECTIONS[splitter.command_name]:
+        if section in ADJACENT_SECTIONS["OPTIONS"]:
+            options_sections.append(section)
+
+    for section in options_sections:
+        content = splitter.get_section_content(section)
+        if content:
+            options_chunks = splitter.chunk_options(section)
+            for chunk in options_chunks:
+                print(chunk.chunk_id)
+                print(chunk.chunk_content)
+                print(chunk.metadata)
+                print("-" * 100)
+            print(len(options_chunks))
+
+            # print("\n".join(context_chunks))
+        else:
+            print("no content found")

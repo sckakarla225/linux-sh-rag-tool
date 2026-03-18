@@ -1,4 +1,6 @@
 CONTENT_INDENT = "       " # 7 spaces (1 indent) => standardized for every man page
+MAX_TOKEN_LIMIT = 300
+MAX_TOKEN_EDGE_LIMIT = 384
 
 TARGET_COMMAND_URLS = {
     # File processing & handling

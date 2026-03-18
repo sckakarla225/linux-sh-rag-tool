@@ -193,8 +193,7 @@ OPTIONS
        The following options are global: --fail-early, --libcurl,
        --parallel-immediate, -Z, --parallel, -#, --progress-bar, --rate,
        -S, --show-error, --stderr, --styled-output, --trace-ascii,
-       --trace-config, --trace-ids, --trace-time, --trace and -v,
-       --verbose.
+       --trace-config, --trace-ids, --trace-time, --trace and -v, --verbose.
 
        --abstract-unix-socket <path>
               (HTTP) Connect through an abstract Unix domain socket,
