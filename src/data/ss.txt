@@ -480,7 +480,7 @@ HOST SYNTAX
               PORT is either the numerical socket port, or the service
               name for the port to match.
        
-USAGE EXAMPLES
+EXAMPLES
        Display all TCP sockets.
               ss -t -a
 

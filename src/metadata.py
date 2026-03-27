@@ -66,7 +66,7 @@ class ENVIRONMENTMetadataModel(BaseModel):
     command_category: Literal["FILE_PROCESSING", "NETWORKING"]
     source_file: str
     utility: Literal["LOW", "MEDIUM", "HIGH"] = "MEDIUM"
-    variable_name: str
+    variable_name: Optional[str] = None
     unit_type: Literal["environment_variable_unit", "context_unit"]
     fragmented: bool = False
 
@@ -79,5 +79,4 @@ class OUTPUTMetadataModel(BaseModel):
     utility: Literal["LOW", "MEDIUM", "HIGH"] = "HIGH"
     unit_type: Literal["output_flag_unit", "context_unit"]
     flag_name: Optional[str] = None
-    has_suboptions: bool = False
     fragmented: bool = False
