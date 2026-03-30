@@ -363,7 +363,7 @@ STATE-FILTER
               bound but otherwise inactive sockets (not
               listening, connecting, etc.)
 
-EXPRESSION
+EXPRESSIONS
        EXPRESSION allows filtering based on specific criteria.
        EXPRESSION consists of a series of predicates combined by boolean
        operators. The possible operators in increasing order of
