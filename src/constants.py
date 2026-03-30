@@ -1,6 +1,8 @@
 CONTENT_INDENT = "       " # 7 spaces (1 indent) => standardized for every man page
 MAX_TOKEN_LIMIT = 300
 MAX_TOKEN_EDGE_LIMIT = 384
+MPNET_TOKENIZER_ID = "sentence-transformers/all-mpnet-base-v2"
+MPNET_TOKENIZER = None
 
 TARGET_COMMAND_URLS = {
     # File processing & handling

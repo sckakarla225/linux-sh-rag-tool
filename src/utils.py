@@ -4,8 +4,17 @@ from transformers import AutoTokenizer
 from constants import (
     COMMAND_CATEGORIES,
     CONTENT_INDENT,
-    MAX_TOKEN_LIMIT
+    MAX_TOKEN_LIMIT,
+    MPNET_TOKENIZER_ID,
+    MPNET_TOKENIZER
 )
+
+def get_mpnet_tokenizer() -> AutoTokenizer:
+    global MPNET_TOKENIZER
+    if MPNET_TOKENIZER is None:
+        MPNET_TOKENIZER = AutoTokenizer.from_pretrained(MPNET_TOKENIZER_ID)
+        MPNET_TOKENIZER.model_max_length = 10_000
+    return MPNET_TOKENIZER
 
 def is_section_header(line: str) -> bool:
     stripped_line = line.strip()
@@ -52,13 +61,7 @@ def starts_with_command_name(line: str, command_name: str) -> bool:
     return not chars_after_command[0].isalnum() and chars_after_command[0] != "-"
 
 def count_tokens(text: str) -> int:
-    # count using the same tokenizer as the embedding model
-    tokenizer = AutoTokenizer.from_pretrained(
-        "sentence-transformers/all-mpnet-base-v2"
-    )
-    tokenizer.model_max_length = 10_000
-    if tokenizer is None:
-        return 0
+    tokenizer = get_mpnet_tokenizer()
     return len(tokenizer.encode(text, add_special_tokens=False))
 
 def overlap_text(
@@ -66,13 +69,8 @@ def overlap_text(
     max_tokens: int = MAX_TOKEN_LIMIT,
     overlap_tokens: int = int(MAX_TOKEN_LIMIT * 0.15)
 ) -> list[str]:
-    tokenizer = AutoTokenizer.from_pretrained(
-        "sentence-transformers/all-mpnet-base-v2"
-    )
-    tokenizer.model_max_length = 10_000
-    if tokenizer is None:
-        return []
-    
+    tokenizer = get_mpnet_tokenizer()
+
     # overlap not necessary for short text
     tokens = tokenizer.encode(text, add_special_tokens=False)
     if len(tokens) <= max_tokens:
@@ -106,12 +104,7 @@ def split_text_by_tokens(
     text: str, 
     max_tokens: int = MAX_TOKEN_LIMIT
 ) -> list[str]:
-    tokenizer = AutoTokenizer.from_pretrained(
-        "sentence-transformers/all-mpnet-base-v2"
-    )
-    tokenizer.model_max_length = 10_000
-    if tokenizer is None:
-        return []
+    tokenizer = get_mpnet_tokenizer()
 
     stripped_text = text.strip()
     if not stripped_text:
