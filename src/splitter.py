@@ -77,6 +77,58 @@ class ManPageSplitter:
         formatted_content = fix_section_content_indent(content)
         return formatted_content.strip()
 
+    def get_sections(self, section_category: str) -> list[str]:
+        if section_category == "NAME":
+            return ["NAME"]
+        elif section_category == "SYNOPSIS":
+            return ["SYNOPSIS"]
+        elif section_category == "DESCRIPTION":
+            description_sections: list[str] = []
+            if "DESCRIPTION" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                description_sections.append("DESCRIPTION")
+            for section in TARGET_COMMAND_SECTIONS[self.command_name]:
+                if section in ADJACENT_SECTIONS["DESCRIPTION"]:
+                    description_sections.append(section)
+            return description_sections
+        elif section_category == "OPTIONS":
+            options_sections: list[str] = []
+            if "OPTIONS" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                options_sections.append("OPTIONS")
+            for section in TARGET_COMMAND_SECTIONS[self.command_name]:
+                if section in ADJACENT_SECTIONS["OPTIONS"]:
+                    options_sections.append(section)
+            return options_sections
+        elif section_category == "(REGULAR) EXPRESSIONS":
+            expressions_sections: list[str] = []
+            if "EXPRESSIONS" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                expressions_sections.append("EXPRESSIONS")
+            elif "REGULAR EXPRESSIONS" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                expressions_sections.append("REGULAR EXPRESSIONS")
+            for section in TARGET_COMMAND_SECTIONS[self.command_name]:
+                if section in ADJACENT_SECTIONS["EXPRESSIONS"]:
+                    expressions_sections.append(section)
+            return expressions_sections
+        elif section_category == "ENVIRONMENT (VARIABLES)":
+            if "ENVIRONMENT" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                return ["ENVIRONMENT"]
+            elif "ENVIRONMENT VARIABLES" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                return ["ENVIRONMENT VARIABLES"]
+            return []
+        elif section_category == "OUTPUT (FORMAT)":
+            output_sections: list[str] = []
+            if "OUTPUT" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                output_sections.append("OUTPUT")
+            elif "OUTPUT FORMAT" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                output_sections.append("OUTPUT FORMAT")
+            for section in TARGET_COMMAND_SECTIONS[self.command_name]:
+                if section in ADJACENT_SECTIONS["OUTPUT"]:
+                    output_sections.append(section)
+            return output_sections
+        elif section_category == "EXAMPLES":
+            if "EXAMPLES" in TARGET_COMMAND_SECTIONS[self.command_name]:
+                return ["EXAMPLES"]
+            return []
+
     def chunk_name(self) -> list[ManPageChunk]:
         content = self.get_section_content("NAME")
         if content is None or not content.strip():
@@ -937,14 +989,7 @@ if __name__ == "__main__":
     print("Splitting man page...")
     splitter = ManPageSplitter("data/curl.txt", "curl")
 
-    expressions_sections: list[str] = []
-    if "EXPRESSIONS" in TARGET_COMMAND_SECTIONS[splitter.command_name]:
-        expressions_sections.append("EXPRESSIONS")
-    elif "REGULAR EXPRESSIONS" in TARGET_COMMAND_SECTIONS[splitter.command_name]:
-        expressions_sections.append("REGULAR EXPRESSIONS")
-    for section in TARGET_COMMAND_SECTIONS[splitter.command_name]:
-        if section in ADJACENT_SECTIONS["EXPRESSIONS"]:
-            expressions_sections.append(section)
+    expressions_sections = splitter.get_sections("(REGULAR) EXPRESSIONS")
 
     for section in expressions_sections:
         content = splitter.get_section_content(section)
