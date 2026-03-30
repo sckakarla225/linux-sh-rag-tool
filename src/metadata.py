@@ -48,7 +48,6 @@ class EXPRESSIONSMetadataModel(BaseModel):
     utility: Literal["LOW", "MEDIUM", "HIGH"] = "HIGH"
     unit_type: Literal["expression_unit", "context_unit"]
     expression_name: Optional[str] = None
-    has_directives: bool = False
     fragmented: bool = False
 
 class EXAMPLESMetadataModel(BaseModel):

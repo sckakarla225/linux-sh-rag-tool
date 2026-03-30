@@ -466,8 +466,163 @@ class ManPageSplitter:
         
         return chunks
     
-    def chunk_expressions(self) -> list[ManPageChunk]:
-        return
+    def chunk_expressions(self, section_name: str) -> list[ManPageChunk]:
+        content = self.get_section_content(section_name)
+        if content is None or not content.strip():
+            print(f"No chunks found for {section_name} section")
+            return []
+        
+        # split content into expression units and context units
+        expression_units: list[dict[str, str]] = []
+        context_units: list[str] = []
+        lines = content.splitlines()
+        i = 0 # iterator for expression units
+        j = 0 # iterator for context units
+
+        # retrieve and create expression units from section
+        while i < len(lines):
+            # skip the blank lines between expressions
+            if not lines[i].strip():
+                i += 1
+                continue
+            
+            # check if current set of lines is an expression
+            if (
+                lines[i] == lines[i].lstrip()
+                and i + 1 < len(lines)
+                and starts_with_indent(lines[i + 1])
+            ):
+                expression_name = lines[i].strip()
+                i += 1 # go to next line to start expression description
+                
+                # collect description lines for current expression
+                description_lines: list[str] = []
+                while i < len(lines) and (
+                    lines[i].strip() == "" or 
+                    starts_with_indent(lines[i])
+                ):
+                    description_lines.append(lines[i].strip())
+                    i += 1
+                
+                # create expression unit
+                expression_unit = {
+                    "type": "expression",
+                    "expression_name": expression_name,
+                    "description_lines": fix_section_content_indent("\n".join(description_lines).strip()),
+                }
+                expression_units.append(expression_unit)
+                continue
+            
+            # go to next line since current line is not an expression
+            i += 1
+
+        # retrieve and create context units from section
+        while j < len(lines):
+            # blank line, can skip
+            if not lines[j].strip():
+                j += 1
+                continue
+            
+            # check if environment section and skip it
+            next_line = lines[j + 1] if j + 1 < len(lines) else None
+            next_is_env_description = (
+                next_line is not None and (
+                    starts_with_indent(next_line)
+                )
+            )
+            if (
+                not starts_with_indent(lines[j]) 
+                and next_is_env_description
+            ):
+                j += 1 # go to start of environment description
+                while j < len(lines) and (
+                    lines[j].strip() == "" or 
+                    starts_with_indent(lines[j])
+                ):
+                    j += 1 # go to next line
+                continue
+            
+            # collect context paragraph lines
+            if not starts_with_indent(lines[j]) and (
+                (j + 1 >= len(lines) or not starts_with_indent(lines[j + 1]))
+            ):
+                context_units.append(lines[j].strip())
+                j += 1 # keep iterating to collect context paragraph lines until blank line hits
+                while j < len(lines) and (
+                    lines[j].strip() == "" or
+                    starts_with_indent(lines[j])
+                ):
+                    if lines[j].strip() != "":
+                        context_units.append(lines[j].strip())
+                    j += 1 # go to next context paragraph line
+                continue
+
+            # go to next line since current line is not a context paragraph
+            j += 1
+
+        chunks: list[ManPageChunk] = []
+
+        # form chunks from the expression units
+        for expression_unit in expression_units:
+            expression_name = expression_unit["expression_name"]
+            description_lines = expression_unit["description_lines"]
+            description_text = " ".join(
+                line.strip() for line in description_lines.splitlines() if line.strip()
+            )
+
+            expression_name_tokens = count_tokens(expression_name)
+            expression_chunks = split_text_by_tokens(
+                description_text,
+                max_tokens=MAX_TOKEN_LIMIT - expression_name_tokens
+            )
+            for i, expression_chunk in enumerate[str](expression_chunks):
+                if i == 0:
+                    chunk_content = expression_name + ":" + expression_chunk
+                else:
+                    chunk_content = expression_name + " (continued)" + ":" + expression_chunk
+                
+                metadata = EXPRESSIONSMetadataModel(
+                    command_name=self.command_name,
+                    section_category="(REGULAR) EXPRESSIONS",
+                    expression_header=section_name,
+                    command_category=get_command_category(self.command_name),
+                    source_file=self.man_page_path,
+                    utility="HIGH",
+                    unit_type="expression_unit",
+                    expression_name=expression_name,
+                    fragmented=(len(expression_chunks) > 1)
+                )
+                chunk_id = f"{self.command_name}_expression_{expression_name}_{i + 1}"
+                chunk = ManPageChunk(
+                    chunk_id=chunk_id,
+                    chunk_content=chunk_content,
+                    metadata=metadata
+                )
+                chunks.append(chunk)
+        
+        # form chunks from the context units
+        combined_context = " ".join(context_units)
+        context_chunks = split_text_by_tokens(combined_context)
+        for i, context_chunk in enumerate[str](context_chunks):
+            metadata = EXPRESSIONSMetadataModel(
+                command_name=self.command_name,
+                section_category="(REGULAR) EXPRESSIONS",
+                expression_header=section_name,
+                command_category=get_command_category(self.command_name),
+                source_file=self.man_page_path,
+                utility="HIGH",
+                unit_type="context_unit",
+                fragmented=(len(context_chunks) > 1)
+            )
+            chunk_id = f"{self.command_name}_expressions_{section_name}_context_{i + 1}"
+            chunk = ManPageChunk(
+                chunk_id=chunk_id,
+                chunk_content=context_chunk,
+                metadata=metadata
+            )
+            chunks.append(chunk)
+        
+        return chunks
 
     def chunk_environment(self, section_name: str) -> list[ManPageChunk]:
         content = self.get_section_content(section_name)
@@ -781,49 +936,25 @@ class ManPageSplitter:
 if __name__ == "__main__":
     print("Splitting man page...")
     splitter = ManPageSplitter("data/curl.txt", "curl")
-    # splitter = ManPageSplitter("data/ethtool.txt", "ethtool")
-    # splitter = ManPageSplitter("data/tcpdump.txt", "tcpdump")
 
-    output_sections: list[str] = []
-    if "OUTPUT" in TARGET_COMMAND_SECTIONS[splitter.command_name]:
-        output_sections.append("OUTPUT")
+    expressions_sections: list[str] = []
+    if "EXPRESSIONS" in TARGET_COMMAND_SECTIONS[splitter.command_name]:
+        expressions_sections.append("EXPRESSIONS")
+    elif "REGULAR EXPRESSIONS" in TARGET_COMMAND_SECTIONS[splitter.command_name]:
+        expressions_sections.append("REGULAR EXPRESSIONS")
     for section in TARGET_COMMAND_SECTIONS[splitter.command_name]:
-        if section in ADJACENT_SECTIONS["OUTPUT"]:
-            output_sections.append(section)
+        if section in ADJACENT_SECTIONS["EXPRESSIONS"]:
+            expressions_sections.append(section)
 
-    # sections = TARGET_COMMAND_SECTIONS[splitter.command_name]
-    # if "ENVIRONMENT" in sections:
-    #     content = splitter.get_section_content("ENVIRONMENT")
-    #     if content:
-    #         environment_chunks = splitter.chunk_environment("ENVIRONMENT")
-    #         for chunk in environment_chunks:
-    #             print(chunk.chunk_id)
-    #             print(chunk.chunk_content)
-    #             print(chunk.metadata)
-    #             print("-" * 100)
-    #         print(len(environment_chunks))
-    # elif "ENVIRONMENT VARIABLES" in sections:
-    #     content = splitter.get_section_content("ENVIRONMENT VARIABLES")
-    #     if content:
-    #         environment_chunks = splitter.chunk_environment("ENVIRONMENT VARIABLES")
-    #         for chunk in environment_chunks:
-    #             print(chunk.chunk_id)
-    #             print(chunk.chunk_content)
-    #             print(chunk.metadata)
-    #             print("-" * 100)
-    #         print(len(environment_chunks))
-
-    for section in output_sections:
+    for section in expressions_sections:
         content = splitter.get_section_content(section)
         if content:
-            output_chunks = splitter.chunk_output(section)
-            for chunk in output_chunks:
+            expressions_chunks = splitter.chunk_expressions(section)
+            for chunk in expressions_chunks:
                 print(chunk.chunk_id)
                 print(chunk.chunk_content)
                 print(chunk.metadata)
                 print("-" * 100)
-            print(len(output_chunks))
-
-            # print("\n".join(context_chunks))
+            print(len(expressions_chunks))
         else:
             print("no content found")

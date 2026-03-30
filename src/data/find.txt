@@ -843,7 +843,7 @@ TESTS
               (SELinux only) Security context of the file matches glob
               pattern.
 
-ACTIONS:
+ACTIONS
        -delete
               Delete files or directories; true if removal succeeded.  If
               the removal failed, an error message is issued and find's
