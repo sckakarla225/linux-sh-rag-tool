@@ -1,4 +1,5 @@
 import pytest
+import json
 from pathlib import Path
 from collections import Counter
 from typing import Any
@@ -15,7 +16,7 @@ from metadata import (
     ENVIRONMENTMetadataModel,
     OUTPUTMetadataModel
 )
-from utils import count_tokens
+from utils import count_tokens, starts_with_command_name, fingerprint_text
 from constants import MAX_TOKEN_LIMIT
 
 # sample set of man pages to test (run each manually -- TEST_MAN_PAGE_COMMANDS[0-4])
@@ -89,6 +90,9 @@ TEST_MAN_PAGE_COMMAND_CATEGORIES = {
     "gawk": "FILE_PROCESSING",
     "ping": "NETWORKING"
 }
+TEST_MAN_PAGE_CASES_PATH = Path(__file__).resolve().parent / "cases" / "test_splitter.json"
+with TEST_MAN_PAGE_CASES_PATH.open("r", encoding="utf-8") as file:
+    TEST_MAN_PAGE_CASES = json.load(file)
 
 # setup the splitter: run once for each man page in TEST_MAN_PAGE_COMMANDS (edit index below)
 @pytest.fixture
@@ -100,11 +104,14 @@ def setup_splitter(man_page_path):
     # setup the splitter
     splitter = ManPageSplitter(str(source_file), command_name)
     adjacent_sections = TEST_MAN_PAGE_ADJACENT_SECTIONS[command_name]
-    return splitter, adjacent_sections, command_name
+    # get the case data for command
+    case_data = TEST_MAN_PAGE_CASES[command_name]
+    assert case_data is not None
+    return splitter, adjacent_sections, command_name, case_data
 
 # tester for chunking NAME sections
 def test_chunk_name(setup_splitter):
-    splitter, adjacent_sections, command_name = setup_splitter
+    splitter, adjacent_sections, command_name, case_data = setup_splitter
     
     # check that the sections are correct
     target_sections = ["NAME"]
@@ -136,7 +143,7 @@ def test_chunk_name(setup_splitter):
 
 # tester for chunking SYNOPSIS sections
 def test_chunk_synopsis(setup_splitter):
-    splitter, adjacent_sections, command_name = setup_splitter
+    splitter, adjacent_sections, command_name, case_data = setup_splitter
     
     # check that the sections are correct
     target_sections = ["SYNOPSIS"]
@@ -161,9 +168,6 @@ def test_chunk_synopsis(setup_splitter):
         assert chunk_content == chunk_content.strip()
         assert count_tokens(chunk_content) <= MAX_TOKEN_LIMIT
 
-        # content checks
-        
-
         # metadata checks
         assert chunk_metadata.command_name == command_name
         assert chunk_metadata.section_category == "SYNOPSIS"
@@ -171,10 +175,47 @@ def test_chunk_synopsis(setup_splitter):
         assert chunk_metadata.utility == "HIGH"
         assert chunk_metadata.syntax_skeleton == True
         assert chunk_metadata.command_variant_count >= 1
+    
+    # content checks
+    synopsis_case_data = case_data["SYNOPSIS"]
+    assert synopsis_case_data is not None
+    assert "line_unit_count" in synopsis_case_data
+    assert "line_unit_hashes" in synopsis_case_data
+    expected_line_count = synopsis_case_data["line_unit_count"]
+    expected_line_hashes = synopsis_case_data["line_unit_hashes"]
+
+    all_lines: list[str] = [] # collect all lines from chunks
+    for chunk in synopsis_chunks:
+        for line in chunk.chunk_content.splitlines():
+            stripped_line = line.strip() # reformat line (matches splitter)
+            if stripped_line:
+                all_lines.append(stripped_line)
+    
+    line_units: list[str] = [] # reconstruct line units from all lines
+    current_line_unit: list[str] = []
+    for line in all_lines:
+        if starts_with_command_name(line, command_name):
+            if current_line_unit:
+                line_units.append(" ".join(current_line_unit))
+            current_line_unit = [line]
+        else:
+            if current_line_unit:
+                current_line_unit.append(line)
+    
+    if current_line_unit:
+        line_units.append(" ".join(current_line_unit))
+    
+    assert len(line_units) == expected_line_count
+    for unit in line_units:
+        assert starts_with_command_name(unit, command_name) # must start with command name
+        assert fingerprint_text(unit) in expected_line_hashes # must exist
+    # frequencies of line hashes should match case data
+    line_hashes = [fingerprint_text(unit) for unit in line_units]
+    assert Counter[str](line_hashes) == Counter[str](expected_line_hashes)
 
 # tester for chunking DESCRIPTION sections
 def test_chunk_description(setup_splitter):
-    splitter, adjacent_sections, command_name = setup_splitter
+    splitter, adjacent_sections, command_name, case_data = setup_splitter
     
     # check that the sections are correct
     target_sections = adjacent_sections["DESCRIPTION"] + ["DESCRIPTION"]
@@ -190,7 +231,7 @@ def test_chunk_description(setup_splitter):
 
 # tester for chunking OPTIONS sections
 def test_chunk_options(setup_splitter):
-    splitter, adjacent_sections, command_name = setup_splitter
+    splitter, adjacent_sections, command_name, case_data = setup_splitter
     
     # check that the sections are correct
     target_sections = adjacent_sections["OPTIONS"] + ["OPTIONS"]
@@ -204,7 +245,7 @@ def test_chunk_options(setup_splitter):
 
 # tester for chunking (REGULAR) EXPRESSIONS sections
 def test_chunk_expressions(setup_splitter):
-    splitter, adjacent_sections, command_name = setup_splitter
+    splitter, adjacent_sections, command_name, case_data = setup_splitter
     
     # check that the sections are correct
     if "EXPRESSIONS" in TARGET_COMMAND_SECTIONS[command_name]:
@@ -223,7 +264,7 @@ def test_chunk_expressions(setup_splitter):
 
 # tester for chunking ENVIRONMENT (VARIABLES) sections
 def test_chunk_environment(setup_splitter):
-    splitter, adjacent_sections, command_name = setup_splitter
+    splitter, adjacent_sections, command_name, case_data = setup_splitter
     
     # check that the sections are correct
     if "ENVIRONMENT" in TARGET_COMMAND_SECTIONS[command_name]:
@@ -242,7 +283,7 @@ def test_chunk_environment(setup_splitter):
 
 # tester for chunking OUTPUT (FORMAT) sections
 def test_chunk_output(setup_splitter):
-    splitter, adjacent_sections, command_name = setup_splitter
+    splitter, adjacent_sections, command_name, case_data = setup_splitter
     # check that the sections are correct
     if "OUTPUT" in TARGET_COMMAND_SECTIONS[command_name]:
         target_sections = adjacent_sections["OUTPUT"] + ["OUTPUT"]
@@ -260,7 +301,7 @@ def test_chunk_output(setup_splitter):
 
 # tester for chunking EXAMPLES sections
 def test_chunk_examples(setup_splitter):
-    splitter, adjacent_sections, command_name = setup_splitter
+    splitter, adjacent_sections, command_name, case_data = setup_splitter
     
     # check that the sections are correct
     if "EXAMPLES" in TARGET_COMMAND_SECTIONS[command_name]:
