@@ -987,19 +987,27 @@ class ManPageSplitter:
 
 if __name__ == "__main__":
     print("Splitting man page...")
-    splitter = ManPageSplitter("data/curl.txt", "curl")
+    splitter = ManPageSplitter("data/ethtool.txt", "ethtool")
 
-    expressions_sections = splitter.get_sections("(REGULAR) EXPRESSIONS")
+    synopsis_chunks = splitter.chunk_synopsis()
+    for chunk in synopsis_chunks:
+        print(chunk.chunk_id)
+        print(chunk.chunk_content)
+        print(chunk.metadata)
+        print("-" * 100)
+    print(len(synopsis_chunks))
 
-    for section in expressions_sections:
-        content = splitter.get_section_content(section)
-        if content:
-            expressions_chunks = splitter.chunk_expressions(section)
-            for chunk in expressions_chunks:
-                print(chunk.chunk_id)
-                print(chunk.chunk_content)
-                print(chunk.metadata)
-                print("-" * 100)
-            print(len(expressions_chunks))
-        else:
-            print("no content found")
+    # expressions_sections = splitter.get_sections("(REGULAR) EXPRESSIONS")
+
+    # for section in expressions_sections:
+    #     content = splitter.get_section_content(section)
+    #     if content:
+    #         expressions_chunks = splitter.chunk_expressions(section)
+    #         for chunk in expressions_chunks:
+    #             print(chunk.chunk_id)
+    #             print(chunk.chunk_content)
+    #             print(chunk.metadata)
+    #             print("-" * 100)
+    #         print(len(expressions_chunks))
+    #     else:
+    #         print("no content found")

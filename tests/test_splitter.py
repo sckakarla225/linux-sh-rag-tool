@@ -1,9 +1,22 @@
 import pytest
 from pathlib import Path
 from collections import Counter
+from typing import Any
 
 from constants import TARGET_COMMAND_SECTIONS
 from splitter import ManPageSplitter, ManPageChunk
+from metadata import (
+    NAMEMetadataModel,
+    SYNOPSISMetadataModel,
+    DESCRIPTIONMetadataModel,
+    OPTIONSMetadataModel,
+    EXPRESSIONSMetadataModel,
+    EXAMPLESMetadataModel,
+    ENVIRONMENTMetadataModel,
+    OUTPUTMetadataModel
+)
+from utils import count_tokens
+from constants import MAX_TOKEN_LIMIT
 
 # sample set of man pages to test (run each manually -- TEST_MAN_PAGE_COMMANDS[0-4])
 TEST_MAN_PAGE_COMMANDS = ['curl', 'head', 'rsync', 'gawk', 'ping']
@@ -51,7 +64,7 @@ TEST_MAN_PAGE_ADJACENT_SECTIONS = {
             "BUILT-IN VARIABLES", "ARRAYS", "NAMESPACES", 
             "VARIABLE TYPING AND CONVERSION", "OCTAL AND HEXADECIMAL CONSTANTS",
             "STRING CONSTANTS", "REGEXP CONSTANTS", "PATTERNS AND ACTIONS OVERVIEW",
-            "PATTERNS", "REGULAR EXPRESSIONS", "ACTIONS", "OPERATORS",
+            "PATTERNS", "ACTIONS", "OPERATORS",
             "CONTROL STATEMENTS", "I/O STATEMENTS", "THE PRINTF STATEMENT",
             "SPECIAL FILE NAMES", "NUMERIC FUNCTIONS", "STRING FUNCTIONS",
             "TIME FUNCTIONS", "INTERNATIONALIZATION"
@@ -68,6 +81,13 @@ TEST_MAN_PAGE_ADJACENT_SECTIONS = {
         "EXPRESSIONS": [],
         "OUTPUT": []
     },
+}
+TEST_MAN_PAGE_COMMAND_CATEGORIES = {
+    "curl": "NETWORKING",
+    "head": "FILE_PROCESSING",
+    "rsync": "FILE_PROCESSING",
+    "gawk": "FILE_PROCESSING",
+    "ping": "NETWORKING"
 }
 
 # setup the splitter: run once for each man page in TEST_MAN_PAGE_COMMANDS (edit index below)
@@ -92,6 +112,28 @@ def test_chunk_name(setup_splitter):
     sections = splitter.get_sections("NAME")
     assert Counter[str](sections) == Counter[str](target_sections)
 
+    name_chunks = splitter.chunk_name()
+    # base checks
+    assert len(name_chunks) == 1
+    assert isinstance(name_chunks[0], ManPageChunk)
+    assert isinstance(name_chunks[0].metadata, NAMEMetadataModel)
+
+    chunk_id = name_chunks[0].chunk_id
+    chunk_content = name_chunks[0].chunk_content
+    chunk_metadata = name_chunks[0].metadata
+
+    # other basic checks
+    assert chunk_id == f"{command_name}_name_summary"
+    assert chunk_content != ""
+    assert chunk_content == chunk_content.strip()
+    assert count_tokens(chunk_content) <= MAX_TOKEN_LIMIT
+
+    # metadata checks
+    assert chunk_metadata.command_name == command_name
+    assert chunk_metadata.section_category == "NAME"
+    assert chunk_metadata.command_category == TEST_MAN_PAGE_COMMAND_CATEGORIES[command_name]
+    assert chunk_metadata.utility == "LOW"
+
 # tester for chunking SYNOPSIS sections
 def test_chunk_synopsis(setup_splitter):
     splitter, adjacent_sections, command_name = setup_splitter
@@ -101,6 +143,34 @@ def test_chunk_synopsis(setup_splitter):
     
     sections = splitter.get_sections("SYNOPSIS")
     assert Counter[str](sections) == Counter[str](target_sections)
+
+    synopsis_chunks = splitter.chunk_synopsis()
+    # base checks
+    assert len(synopsis_chunks) >= 1
+    for i, chunk in enumerate[Any](synopsis_chunks):
+        assert isinstance(chunk, ManPageChunk)
+        assert isinstance(chunk.metadata, SYNOPSISMetadataModel)
+        
+        chunk_id = chunk.chunk_id
+        chunk_content = chunk.chunk_content
+        chunk_metadata = chunk.metadata
+
+        # other basic checks
+        assert chunk_id == f"{command_name}_synopsis_{i + 1}"
+        assert chunk_content != ""
+        assert chunk_content == chunk_content.strip()
+        assert count_tokens(chunk_content) <= MAX_TOKEN_LIMIT
+
+        # content checks
+        
+
+        # metadata checks
+        assert chunk_metadata.command_name == command_name
+        assert chunk_metadata.section_category == "SYNOPSIS"
+        assert chunk_metadata.command_category == TEST_MAN_PAGE_COMMAND_CATEGORIES[command_name]
+        assert chunk_metadata.utility == "HIGH"
+        assert chunk_metadata.syntax_skeleton == True
+        assert chunk_metadata.command_variant_count >= 1
 
 # tester for chunking DESCRIPTION sections
 def test_chunk_description(setup_splitter):
@@ -114,6 +184,10 @@ def test_chunk_description(setup_splitter):
     print(sections)
     assert Counter[str](sections) == Counter[str](target_sections)
 
+    if len(target_sections) > 0:
+        for section_name in target_sections:
+            description_chunks = splitter.chunk_description(section_name)
+
 # tester for chunking OPTIONS sections
 def test_chunk_options(setup_splitter):
     splitter, adjacent_sections, command_name = setup_splitter
@@ -123,6 +197,10 @@ def test_chunk_options(setup_splitter):
     
     sections = splitter.get_sections("OPTIONS")
     assert Counter[str](sections) == Counter[str](target_sections)
+
+    if len(target_sections) > 0:
+        for section_name in target_sections:
+            options_chunks = splitter.chunk_options(section_name)
 
 # tester for chunking (REGULAR) EXPRESSIONS sections
 def test_chunk_expressions(setup_splitter):
@@ -135,9 +213,13 @@ def test_chunk_expressions(setup_splitter):
         target_sections = adjacent_sections["EXPRESSIONS"] + ["REGULAR EXPRESSIONS"]
     else:
         target_sections = adjacent_sections["EXPRESSIONS"]
-    
+
     sections = splitter.get_sections("(REGULAR) EXPRESSIONS")
     assert Counter[str](sections) == Counter[str](target_sections)
+
+    if len(target_sections) > 0:
+        for section_name in target_sections:
+            expressions_chunks = splitter.chunk_expressions(section_name)
 
 # tester for chunking ENVIRONMENT (VARIABLES) sections
 def test_chunk_environment(setup_splitter):
@@ -154,6 +236,10 @@ def test_chunk_environment(setup_splitter):
     sections = splitter.get_sections("ENVIRONMENT (VARIABLES)")
     assert Counter[str](sections) == Counter[str](target_sections)
 
+    if len(target_sections) > 0:
+        assert len(target_sections) == 1
+        environment_chunks = splitter.chunk_environment(target_sections[0])
+
 # tester for chunking OUTPUT (FORMAT) sections
 def test_chunk_output(setup_splitter):
     splitter, adjacent_sections, command_name = setup_splitter
@@ -167,6 +253,10 @@ def test_chunk_output(setup_splitter):
 
     sections = splitter.get_sections("OUTPUT (FORMAT)")
     assert Counter[str](sections) == Counter[str](target_sections)
+    
+    if len(target_sections) > 0:
+        for section_name in target_sections:
+            output_chunks = splitter.chunk_output(section_name)
 
 # tester for chunking EXAMPLES sections
 def test_chunk_examples(setup_splitter):
@@ -180,3 +270,6 @@ def test_chunk_examples(setup_splitter):
 
     sections = splitter.get_sections("EXAMPLES")
     assert Counter[str](sections) == Counter[str](target_sections)
+
+    if len(target_sections) > 0:
+        examples_chunks = splitter.chunk_examples()

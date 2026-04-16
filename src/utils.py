@@ -1,4 +1,5 @@
 import re
+import hashlib
 from transformers import AutoTokenizer
 
 from constants import (
@@ -25,7 +26,7 @@ def is_section_header(line: str) -> bool:
     if line != line.lstrip():
         return False
     # section headers are all CAPS, no additional chars
-    return bool(re.fullmatch(r"[A-Z0-9][A-Z0-9 \t\(\)\-]*", stripped_line))
+    return bool(re.fullmatch(r"[A-Z0-9][A-Z0-9 \t\(\)\-/]*", stripped_line))
 
 def get_command_category(command_name: str) -> str:
     if command_name in COMMAND_CATEGORIES["FILE_PROCESSING"]:
@@ -56,9 +57,7 @@ def starts_with_command_name(line: str, command_name: str) -> bool:
 
     # should be a space or nothing after the command name (not alphanumeric or a hyphen)
     chars_after_command = stripped_line[len(command_name):]
-    if not chars_after_command:
-        return True
-    return not chars_after_command[0].isalnum() and chars_after_command[0] != "-"
+    return chars_after_command == "" or chars_after_command[0].isspace()
 
 def count_tokens(text: str) -> int:
     tokenizer = get_mpnet_tokenizer()
@@ -91,7 +90,10 @@ def overlap_text(
     return chunks
 
 def starts_with_indent(line: str) -> bool:
-    return line.startswith(CONTENT_INDENT)
+    return (
+        line.startswith(CONTENT_INDENT)
+        and (len(line) == len(CONTENT_INDENT) or line[len(CONTENT_INDENT)] != " ")
+    )
 
 def starts_with_dash(line: str) -> bool:
     stripped_line = line.strip()
@@ -126,3 +128,11 @@ def split_text_by_tokens(
         start = end
 
     return chunks
+
+def normalize_text(text: str) -> str:
+    # remove all whitespace from the text
+    return re.sub(r"\s+", " ", text).strip()
+
+def fingerprint_text(text: str) -> str:
+    # hash the text using SHA-256 (for verification purposes)
+    return hashlib.sha256(normalize_text(text).encode("utf-8")).hexdigest()

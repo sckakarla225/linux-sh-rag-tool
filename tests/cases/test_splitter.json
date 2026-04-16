@@ -1,0 +1,79 @@
+{
+    "curl": {
+        "SYNOPSIS": {
+            "line_unit_count": 1,
+            "line_unit_hashes": [
+                "2fe54f56c8c43649aa4dc686094c7392b8a74f98d759d593dfd39026b97a459c"
+            ]
+        },
+        "DESCRIPTION": {},
+        "OPTIONS": {},
+        "EXPRESSIONS": {},
+        "ENVIRONMENT": {},
+        "OUTPUT": {},
+        "EXAMPLES": {}
+    },
+    "head": {
+        "SYNOPSIS": {
+            "line_unit_count": 1,
+            "line_unit_hashes": [
+                "2c9925ff94a1dfb58d7cc9cae150c48bcaeccc2c3c58398418e46404ee29164b"
+            ]
+        },
+        "DESCRIPTION": {},
+        "OPTIONS": {},
+        "EXPRESSIONS": {},
+        "ENVIRONMENT": {},
+        "OUTPUT": {},
+        "EXAMPLES": {}
+    },
+    "rsync": {
+        "SYNOPSIS": {
+            "line_unit_count": 7,
+            "line_unit_hashes": [
+                "ec0b34987d65d885ab6d444ce8ce3bcb3854a8a0f68f69d74fc66652f30f7f05",
+                "01e080cacd21aee9561d2062aeffb139643df81e9a0a591c8553c8bbce4326bf",
+                "3f3a2638bc6d75ddaed6c07a7eb40df9e9c609ee2c56e71b2941e6b3ae0c791f",
+                "3a68194898d265a1296435de370a88f813ee305f560e08b8d794e59d62f72b15",
+                "10b5e10a539acc9606ebbd7fde24baa35e674a5f1d2a231b362e3a4b77921d0f",
+                "0600e11b3a5120c40b863ab448e821461286e52911ff629b7aec9dd795552601",
+                "b918faaa6763a124078f2f37200aa3ca42e95623ea104b90da88d4164bff2235"
+            ]
+        },
+        "DESCRIPTION": {},
+        "OPTIONS": {},
+        "EXPRESSIONS": {},
+        "ENVIRONMENT": {},
+        "OUTPUT": {},
+        "EXAMPLES": {}
+    },
+    "gawk": {
+        "SYNOPSIS": {
+            "line_unit_count": 2,
+            "line_unit_hashes": [
+                "b2adb14f2c6df9e00f79eb8b74948aa3236cbce09efdf64c4f930add4455f4fd",
+                "82c4cd526c40fa0e61fd6d5a1d5b5a949c2c385a0acce452717623cd3682c9e9"
+            ]
+        },
+        "DESCRIPTION": {},
+        "OPTIONS": {},
+        "EXPRESSIONS": {},
+        "ENVIRONMENT": {},
+        "OUTPUT": {},
+        "EXAMPLES": {}
+    },
+    "ping": {
+        "SYNOPSIS": {
+            "line_unit_count": 1,
+            "line_unit_hashes": [
+                "4afda5d86c5fcace8f5af67bb75a1bebbe8251fee555702e2387f28e4ec23dc3"
+            ]
+        },
+        "DESCRIPTION": {},
+        "OPTIONS": {},
+        "EXPRESSIONS": {},
+        "ENVIRONMENT": {},
+        "OUTPUT": {},
+        "EXAMPLES": {}
+    }
+}
